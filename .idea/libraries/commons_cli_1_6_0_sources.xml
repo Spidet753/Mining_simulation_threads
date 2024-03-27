@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="commons-cli-1.6.0-sources">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0-tests.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

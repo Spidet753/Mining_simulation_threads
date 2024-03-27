@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PGS:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PGS_jar</output-path>
+    <root id="archive" name="PGS.jar">
+      <element id="module-output" name="PGS" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0-tests.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
