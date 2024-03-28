@@ -5,6 +5,9 @@
       <element id="module-output" name="PGS" />
       <element id="extracted-dir" path="$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0-tests.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/libs/commons-cli-1.6.0/commons-cli-1.6.0.jar" path-in-jar="/" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
     </root>
   </artifact>
 </component>
