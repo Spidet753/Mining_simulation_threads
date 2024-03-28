@@ -18,12 +18,12 @@ public class Main {
         public static void main(String[] args) throws InterruptedException {
             loadInput(args);
             Foreman foreman = new Foreman(inputFile);
-            Thread first = new Thread(foreman);
-            first.start();
+            Thread foremanThread = new Thread(foreman);
+            foremanThread.start();
 
             //wait for foreman to search for blocks
             try {
-                first.join();
+                foremanThread.join();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -31,6 +31,7 @@ public class Main {
             for(int i = 0; i < workers.length; i++){
                 workers[i] = new Worker(i, timePerWorker);
                 Thread workerThread = new Thread(workers[i]);
+                workerThread.setName("Dělník "+ (i+1));
                 workerThread.start();
             }
 
