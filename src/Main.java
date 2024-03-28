@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static java.lang.Thread.sleep;
+
 public class Main {
     public static int numberOfWorkers;
     public static int timePerWorker;
@@ -13,11 +15,27 @@ public class Main {
     public static String inputFile;
     public static String outputFile;
 
-        public static void main(String[] args){
+        public static void main(String[] args) throws InterruptedException {
             loadInput(args);
             Foreman foreman = new Foreman(inputFile);
             Thread first = new Thread(foreman);
             first.start();
+
+            //wait for foreman to search for blocks
+            try {
+                first.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            Worker[] workers = new Worker[numberOfWorkers];
+            for(int i = 0; i < workers.length; i++){
+                workers[i] = new Worker(i, timePerWorker);
+                Thread workerThread = new Thread(workers[i]);
+                workerThread.start();
+            }
+
+
+
             System.out.println("Program has ended.");
         }
 
