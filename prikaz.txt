@@ -1,1 +1,1 @@
-java -jar C:\PGS\out\artifacts\PGS_jar\PGS.jar -i ref_input.txt -o output.txt -cWorker 4 -tWorker 50 -capLorry 1000 -tLorry 1000 -capFerry 4
+java -jar C:\PGS\out\artifacts\PGS_jar\PGS.jar -i ref_input3.txt -o output.txt -cWorker 4 -tWorker 50 -capLorry 1000 -tLorry 1000 -capFerry 4

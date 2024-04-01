@@ -14,10 +14,18 @@ public class Main {
     public static BufferedWriter writer;
     public static ThreadGroup workerThreadGroup;
 
+    /**
+     * Main method of the program
+     * @param args arguments that are needed for the application to run
+     * @throws IOException while writing to output file
+     */
     public static void main(String[] args) throws IOException {
+        //group to know if all the threads are dead or alive
         workerThreadGroup = new ThreadGroup("workers");
         loadInput(args);
         writer = new BufferedWriter(new FileWriter(outputFile, false));
+
+        //creating a foreman thread that will go through the input file
         Foreman foreman = new Foreman(inputFile);
         Thread foremanThread = new Thread(foreman);
         foremanThread.start();
@@ -29,14 +37,15 @@ public class Main {
             throw new RuntimeException(e);
         }
 
+        //creating worker Threads
         Worker[] workers = new Worker[numberOfWorkers];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Worker((i+1), timePerWorker);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
-            workerThread.setName("Dělník " + (i + 1));
             workerThread.start();
         }
 
+        //we don't want to end the Main thread until other threads are done
         while (workerThreadGroup.activeCount() > 0) {
             try {
                 Thread.sleep(1000);
@@ -44,15 +53,20 @@ public class Main {
                 throw new RuntimeException(e);
             }
         }
+            //end of Main method, writing out important stats into console
             writer.write("///////////////////////////////\n");
             writer.write("\npočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
             for (int i = 0; i <workers.length; i++){
-                writer.write("\nDělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
+                System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
             }
             writer.close();
             System.out.println("Program has ended.");
     }
 
+    /**
+     * Method which allows to run the Jar file in required state
+     * @param args arguments that are needed for the application to run
+     */
     public static void loadInput(String[] args){
 
         Options options = new Options();
