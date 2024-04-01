@@ -42,7 +42,6 @@ public class Worker implements Runnable {
         if (!Foreman.blocks.isEmpty()) {
             String block = Foreman.blocks.poll();
             if (block != null) {
-                notify();
                 mine(block);
             }
         }
@@ -133,7 +132,7 @@ public class Worker implements Runnable {
 
     /**
      * Getter of all mined sources by an instance of worker
-     * @return (int)
+     * @return (int) mined sources by specific worker
      */
     public int getInventorySumOfMined() {
         return inventorySumOfMined;
