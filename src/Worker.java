@@ -38,19 +38,23 @@ public class Worker implements Runnable {
     }
 
     private void mine(String block) {
-        notifyAll();
+        long temp1 = System.nanoTime();
         int blockLength = block.length();
         for (int i = blockLength; i > 0; i--) {
             try {
                 //TODO CHANGE MININGTIME
-                miningTime = (int)(2 * Math.random());
+                miningTime = (int)(5 * Math.random());
                 sleep(miningTime);
                 this.inventory += 1;
                 logMiningEvent(wNumber, miningTime);
                 if(i == 1){
+                    long temp2 = System.nanoTime();
+                    long tBlockMining = (temp2 - temp1) / 1000000;
                     logCarringEvent(wNumber, inventory);
+                    logBlockMinedEvent(wNumber, tBlockMining);
                     this.inventorySumOfMined += this.inventory;
                     this.inventory = 0;
+
                     break;
                 }
             } catch (InterruptedException e) {
@@ -76,6 +80,12 @@ public class Worker implements Runnable {
     public synchronized void logCarringEvent(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nese " + inventoryCount + " zdrojů.\n");
+        writeToLogFile(logMessage);
+    }
+
+    public synchronized void logBlockMinedEvent(int workerNumber, long time){
+        String timeStamp = dateFormatter.format(new Date());
+        String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " vytěžil celý blok, trvalo mu to " + time + " ms.\n");
         writeToLogFile(logMessage);
     }
 
