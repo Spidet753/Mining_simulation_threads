@@ -1,13 +1,11 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Scanner;
-
-import static java.lang.Thread.sleep;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Foreman implements Runnable{
     public String file;
-    public static ArrayList<String> blocks;
+    public static LinkedBlockingQueue<String> blocks;
     public int countOfsource = 0;
     public Foreman(String file){
         this.file = file;
@@ -16,22 +14,22 @@ public class Foreman implements Runnable{
     public void run(){
 
         File file1 = new File(file);
-        blocks = new ArrayList<>();
+        blocks = new LinkedBlockingQueue<>();
 
         try {
             Scanner sc = new Scanner(file1);
-            int temp = 0;
 
             while(sc.hasNext()) {
-                blocks.add(sc.next());
-                String Xs = blocks.get(temp);
-                countOfsource += Xs.length();
-                temp++;
+                String temp = sc.next();
+                blocks.add(temp);
+                countOfsource += temp.length();
+
             }
 
             System.out.println("předák našel: " + (blocks.size()) + " bloků" +
                                "\npředák našel: " + (countOfsource) + " zdrojů" +
-                               "\n---------------------------"
+                               "\n---------------------------" +
+                               "\nProgram is working..."
                                );
 
         } catch (FileNotFoundException e) {
