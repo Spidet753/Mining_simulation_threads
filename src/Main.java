@@ -16,6 +16,7 @@ public class Main {
     public static BufferedWriter writer;
     public static ThreadGroup workerThreadGroup;
     public static ThreadGroup lorryThreadGroup;
+    public static Worker[] workers;
 
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
@@ -44,7 +45,7 @@ public class Main {
         }
 
         //creating worker Threads
-        Worker[] workers = new Worker[numberOfWorkers];
+        workers = new Worker[numberOfWorkers];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Worker((i+1), timePerWorker);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);

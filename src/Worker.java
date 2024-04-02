@@ -10,8 +10,11 @@ public class Worker implements Runnable {
     private int inventorySumOfMined = 0;
     private static volatile int inventorySum = 0;
     private int miningTime;
-    public static int count = 0;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
+    private static int count = 0;
+    public static volatile boolean wasLast = false;
+
+    public static int doneWorkers = 0;
 
     /**
      * Constructor
@@ -21,6 +24,7 @@ public class Worker implements Runnable {
     public Worker(int wNumber, int timePerX) {
         this.wNumber = wNumber;
         this.timePerX = timePerX;
+        count++;
     }
 
     /**
@@ -34,8 +38,6 @@ public class Worker implements Runnable {
         synchronized (Worker.class) {
             inventorySum += inventorySumOfMined;
         }
-        Thread.currentThread().interrupt();
-        System.out.println(wNumber + "is dead");
     }
 
     /**
@@ -91,11 +93,13 @@ public class Worker implements Runnable {
         Semaphore semaphore = new Semaphore(1);
         while(wInventory > 0) {
             semaphore.w();
-            sleep(Main.timeOfLorry);
+            //TODO SET LORRY TIME
+            sleep(0);
             logPutting(wNumber, 1);
             synchronized (Lorry.class) {
                 fullLorry();
-                //Main.emptyLorrys.peek().inventory += 1;
+                if(Main.readyLorrys.peek() != null)
+                    System.out.println("xd " + Main.readyLorrys.peek().inventory);
             }
             wInventory--;
             semaphore.free();
@@ -103,23 +107,46 @@ public class Worker implements Runnable {
     }
 
     public synchronized void fullLorry() {
-        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity || Main.workerThreadGroup.activeCount() == 0) {
+
+        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
+            System.out.println(Main.workerThreadGroup.activeCount());
             Main.emptyLorrys.peek().ready = true;
-            System.out.println(Main.workerThreadGroup.activeCount() == 0);
-            System.out.println(count + ". " + Main.emptyLorrys.peek().inventory);
+            long end = System.nanoTime();
+            long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
+            logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
             Main.readyLorrys.add(Main.emptyLorrys.peek());
-            Main.emptyLorrys.peek().inventory += 1;
-            count += 1;
-            //if lorry is full, miner sets up new lorry
-            if (Main.workerThreadGroup.activeCount() != 0) {
-                Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
-                Main.emptyLorrys.add(lorry);
-                Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
-                Main.emptyLorrys.remove();
-                lorryThread.start();
-            }
+            Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
+            Main.emptyLorrys.add(lorry);
+            Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+            Main.emptyLorrys.remove();
+            lorryThread.start();
+            Main.emptyLorrys.peek().setInventory(1);
         }
-        Main.emptyLorrys.peek().inventory += 1;
+        else if(doneWorkers == count){
+            lastLorry();
+        }
+        else {
+                for (int i = 0; i < count; i++) {
+                    if (Main.workers[i].inventory == 1 && Foreman.blocks.isEmpty() ) {
+                        doneWorkers++;
+                    }
+                }
+             Main.emptyLorrys.peek().setInventory(1);
+        }
+    }
+
+    public synchronized void lastLorry(){
+            try {
+                Main.writer.write("inventory " + Main.emptyLorrys.peek().inventory+":)\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            long end = System.nanoTime();
+            long time = (end - Main.emptyLorrys.peek().start) / 1000000;
+            logFullEvent(Main.emptyLorrys.peek().vNumber, time);
+            Main.emptyLorrys.peek().ready = true;
+            Main.readyLorrys.add(Main.emptyLorrys.peek());
+
     }
 
     /**
@@ -176,6 +203,17 @@ public class Worker implements Runnable {
     public synchronized void logBlockMinedEvent(int workerNumber, long time){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " vytěžil celý blok, trvalo mu to " + time + " ms.\n");
+        writeToLogFile(logMessage);
+    }
+
+    /**
+     * log outputing situation when lorry is full
+     * @param vNumber Thread number of lorry
+     * @param time How long it took to workers to full that lorry
+     */
+    private synchronized void logFullEvent(int vNumber, long time) {
+        String timeStamp = dateFormatter.format(new Date());
+        String logMessage = String.format("%s - Náklaďák %d je připraven vyrazit, naplnit ho trvalo " + time + " ms.\n", timeStamp, vNumber);
         writeToLogFile(logMessage);
     }
 
