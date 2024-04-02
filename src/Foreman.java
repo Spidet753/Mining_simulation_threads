@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Foreman implements Runnable{
     public String file;
     public static LinkedBlockingQueue<String> blocks;
-    public int countOfsource = 0;
+    public static int countOfsource = 0;
 
     /**
      * Constructor
@@ -44,5 +44,9 @@ public class Foreman implements Runnable{
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static int getCountOfsource() {
+        return countOfsource;
     }
 }

@@ -26,15 +26,10 @@ public class Lorry implements Runnable{
 
     public void run(){
         start = System.nanoTime();
-        while(!ready){
-            try {
-                if(Main.getWorkerThreadGroup().activeCount() < 2){
-                    ready = true;
-                }
-                sleep(10);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         long end = System.nanoTime();
         long time = (end - start) / 1000000;

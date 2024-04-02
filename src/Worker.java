@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.Semaphore;
+
 import static java.lang.Thread.sleep;
 
 public class Worker implements Runnable {
@@ -12,9 +14,10 @@ public class Worker implements Runnable {
     private int miningTime;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
     private static int count = 0;
+    private static int sources = 0;
     public static volatile boolean wasLast = false;
 
-    public static int doneWorkers = 0;
+    public static volatile int doneWorkers = 0;
 
     /**
      * Constructor
@@ -38,6 +41,7 @@ public class Worker implements Runnable {
         synchronized (Worker.class) {
             inventorySum += inventorySumOfMined;
         }
+        Thread.currentThread().interrupt();
     }
 
     /**
@@ -91,62 +95,56 @@ public class Worker implements Runnable {
      */
     public void putIntoLorry(int wNumber, int wInventory) throws InterruptedException {
         Semaphore semaphore = new Semaphore(1);
-        while(wInventory > 0) {
-            semaphore.w();
+        while (wInventory > 0) {
+            semaphore.acquire();
             //TODO SET LORRY TIME
-            sleep(0);
-            logPutting(wNumber, 1);
-            synchronized (Lorry.class) {
-                fullLorry();
-                if(Main.readyLorrys.peek() != null)
-                    System.out.println("xd " + Main.readyLorrys.peek().inventory);
-            }
+            sleep(1);
+            fullLorry();
+
             wInventory--;
-            semaphore.free();
+            semaphore.release();
         }
     }
 
     public synchronized void fullLorry() {
+        synchronized (Worker.class) {
+            Main.emptyLorrys.peek().inventory += 1;
+            sources += 1;
+            logPutting(wNumber, 1);
 
-        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
-            System.out.println(Main.workerThreadGroup.activeCount());
-            Main.emptyLorrys.peek().ready = true;
-            long end = System.nanoTime();
-            long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
-            logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
-            Main.readyLorrys.add(Main.emptyLorrys.peek());
-            Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
-            Main.emptyLorrys.add(lorry);
-            Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
-            Main.emptyLorrys.remove();
-            lorryThread.start();
-            Main.emptyLorrys.peek().setInventory(1);
-        }
-        else if(doneWorkers == count){
-            lastLorry();
-        }
-        else {
-                for (int i = 0; i < count; i++) {
-                    if (Main.workers[i].inventory == 1 && Foreman.blocks.isEmpty() ) {
-                        doneWorkers++;
-                    }
-                }
-             Main.emptyLorrys.peek().setInventory(1);
-        }
-    }
+            if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
 
-    public synchronized void lastLorry(){
-            try {
-                Main.writer.write("inventory " + Main.emptyLorrys.peek().inventory+":)\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                //time to leave
+                long end = System.nanoTime();
+                long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
+
+                //add it to readyLorrys
+                Main.readyLorrys.add(Main.emptyLorrys.peek());
+
+                //log it
+                logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
+
+                //and create new lorry to go
+                Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
+                Main.emptyLorrys.add(lorry);
+                Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+                lorryThread.start();
+                Main.emptyLorrys.remove();
             }
-            long end = System.nanoTime();
-            long time = (end - Main.emptyLorrys.peek().start) / 1000000;
-            logFullEvent(Main.emptyLorrys.peek().vNumber, time);
-            Main.emptyLorrys.peek().ready = true;
-            Main.readyLorrys.add(Main.emptyLorrys.peek());
 
+            if (sources >= Foreman.getCountOfsource() && Main.emptyLorrys.peek().inventory != 0) {
+                //miners mined all sources, time to send last lorry
+                //time to leave
+                long end = System.nanoTime();
+                long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
+
+                //add it to readyLorrys
+                Main.readyLorrys.add(Main.emptyLorrys.peek());
+
+                //log it
+                logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
+            }
+        }
     }
 
     /**

@@ -21,6 +21,8 @@ public class Main {
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
 
+    public static LinkedBlockingQueue<Lorry> drivingLorrys;
+
     /**
      * Main method of the program
      * @param args arguments that are needed for the application to run
@@ -55,6 +57,7 @@ public class Main {
         //first lorry instance
         emptyLorrys = new LinkedBlockingQueue<>();
         readyLorrys = new LinkedBlockingQueue<>();
+        drivingLorrys = new LinkedBlockingQueue<>();
         Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
         emptyLorrys.add(lorry);
         Thread lorryThread = new Thread(lorryThreadGroup, lorry);
