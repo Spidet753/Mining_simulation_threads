@@ -10,6 +10,7 @@ public class Worker implements Runnable {
     private int inventorySumOfMined = 0;
     private static volatile int inventorySum = 0;
     private int miningTime;
+    public static int count = 0;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
 
     /**
@@ -33,6 +34,8 @@ public class Worker implements Runnable {
         synchronized (Worker.class) {
             inventorySum += inventorySumOfMined;
         }
+        Thread.currentThread().interrupt();
+        System.out.println(wNumber + "is dead");
     }
 
     /**
@@ -85,28 +88,38 @@ public class Worker implements Runnable {
      * @param wInventory inventory of worker
      */
     public void putIntoLorry(int wNumber, int wInventory) throws InterruptedException {
+        Semaphore semaphore = new Semaphore(1);
         while(wInventory > 0) {
-            Semaphore semaphore = new Semaphore(1);
             semaphore.w();
             sleep(Main.timeOfLorry);
             logPutting(wNumber, 1);
-            Main.emptyLorrys.peek().setInventory(1);
-            fullLorry();
+            synchronized (Lorry.class) {
+                fullLorry();
+                //Main.emptyLorrys.peek().inventory += 1;
+            }
             wInventory--;
             semaphore.free();
         }
     }
 
     public synchronized void fullLorry() {
-        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
+        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity || Main.workerThreadGroup.activeCount() == 0) {
+            Main.emptyLorrys.peek().ready = true;
+            System.out.println(Main.workerThreadGroup.activeCount() == 0);
+            System.out.println(count + ". " + Main.emptyLorrys.peek().inventory);
             Main.readyLorrys.add(Main.emptyLorrys.peek());
-            Main.emptyLorrys.remove();
+            Main.emptyLorrys.peek().inventory += 1;
+            count += 1;
             //if lorry is full, miner sets up new lorry
-            Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
-            Main.emptyLorrys.add(lorry);
-            Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
-            lorryThread.start();
+            if (Main.workerThreadGroup.activeCount() != 0) {
+                Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
+                Main.emptyLorrys.add(lorry);
+                Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+                Main.emptyLorrys.remove();
+                lorryThread.start();
+            }
         }
+        Main.emptyLorrys.peek().inventory += 1;
     }
 
     /**

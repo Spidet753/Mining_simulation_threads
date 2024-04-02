@@ -8,7 +8,7 @@ public class Lorry implements Runnable{
 
     public int tLorry;
     public int maxCapacity;
-    public int inventory = 0;
+    public volatile int inventory = 0;
     public int vNumber;
     public static int LCount = 0;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
@@ -26,9 +26,10 @@ public class Lorry implements Runnable{
         long start = System.nanoTime();
         while(!ready){
             try {
-                if(Main.workerThreadGroup.activeCount() == 0){
+                if(Main.getWorkerThreadGroup().activeCount() < 2){
                     ready = true;
                 }
+                System.out.println(Main.workerThreadGroup.activeCount());
                 sleep(tLorry/2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -42,6 +43,7 @@ public class Lorry implements Runnable{
             throw new RuntimeException(e);
         }
         logFullEvent(this.vNumber, time);
+        Thread.currentThread().interrupt();
 
 //        //if lorry is full, miner sets up new lorry
 //        Lorry lorry = new Lorry(Main.Lorrys.getLast().maxCapacity,Main.Lorrys.getLast().tLorry);

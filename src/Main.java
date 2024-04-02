@@ -43,14 +43,6 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        //first lorry instance
-        emptyLorrys = new LinkedBlockingQueue<>();
-        readyLorrys = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
-        emptyLorrys.add(lorry);
-        Thread lorryThread = new Thread(lorryThreadGroup, lorry);
-        lorryThread.start();
-
         //creating worker Threads
         Worker[] workers = new Worker[numberOfWorkers];
         for (int i = 0; i < workers.length; i++) {
@@ -58,6 +50,14 @@ public class Main {
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
+
+        //first lorry instance
+        emptyLorrys = new LinkedBlockingQueue<>();
+        readyLorrys = new LinkedBlockingQueue<>();
+        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
+        emptyLorrys.add(lorry);
+        Thread lorryThread = new Thread(lorryThreadGroup, lorry);
+        lorryThread.start();
 
         //we don't want to end the Main thread until other threads are done
         while (workerThreadGroup.activeCount() > 0) {
@@ -140,5 +140,9 @@ public class Main {
             System.exit(1);
             throw new RuntimeException(e);
         }
+    }
+
+    public static ThreadGroup getWorkerThreadGroup() {
+        return workerThreadGroup;
     }
 }
