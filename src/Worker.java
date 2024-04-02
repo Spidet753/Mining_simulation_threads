@@ -72,7 +72,6 @@ public class Worker implements Runnable {
 
                     this.inventorySumOfMined += this.inventory;
                     this.inventory = 0;
-
                     break;
                 }
             } catch (InterruptedException e) {
@@ -86,11 +85,28 @@ public class Worker implements Runnable {
      * @param wInventory inventory of worker
      */
     public void putIntoLorry(int wNumber, int wInventory) throws InterruptedException {
-        Semaphore semaphore = new Semaphore(1);
-        semaphore.w();
-        sleep(Main.timeOfLorry);
-        logPutting(wNumber, wInventory);
-        semaphore.free();
+        while(wInventory > 0) {
+            Semaphore semaphore = new Semaphore(1);
+            semaphore.w();
+            sleep(Main.timeOfLorry);
+            logPutting(wNumber, 1);
+            Main.emptyLorrys.peek().setInventory(1);
+            fullLorry();
+            wInventory--;
+            semaphore.free();
+        }
+    }
+
+    public synchronized void fullLorry() {
+        if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
+            Main.readyLorrys.add(Main.emptyLorrys.peek());
+            Main.emptyLorrys.remove();
+            //if lorry is full, miner sets up new lorry
+            Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
+            Main.emptyLorrys.add(lorry);
+            Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+            lorryThread.start();
+        }
     }
 
     /**
@@ -135,7 +151,7 @@ public class Worker implements Runnable {
     public synchronized void logPutting(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nakládá " + inventoryCount +
-                                         " zdrojů do Náklaďáku: "+ Main.Lorrys.getLast().vNumber + "\n");
+                                         " zdrojů do Náklaďáku: "+ Main.emptyLorrys.peek().vNumber + "\n");
         writeToLogFile(logMessage);
     }
 

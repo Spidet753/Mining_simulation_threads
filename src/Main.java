@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
     public static int numberOfWorkers;
@@ -16,7 +17,8 @@ public class Main {
     public static ThreadGroup workerThreadGroup;
     public static ThreadGroup lorryThreadGroup;
 
-    public static ArrayList<Lorry> Lorrys;
+    public static LinkedBlockingQueue<Lorry> emptyLorrys;
+    public static LinkedBlockingQueue<Lorry> readyLorrys;
 
     /**
      * Main method of the program
@@ -42,9 +44,10 @@ public class Main {
         }
 
         //first lorry instance
-        Lorrys = new ArrayList<>();
+        emptyLorrys = new LinkedBlockingQueue<>();
+        readyLorrys = new LinkedBlockingQueue<>();
         Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
-        Lorrys.add(lorry);
+        emptyLorrys.add(lorry);
         Thread lorryThread = new Thread(lorryThreadGroup, lorry);
         lorryThread.start();
 

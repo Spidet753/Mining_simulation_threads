@@ -13,6 +13,8 @@ public class Lorry implements Runnable{
     public static int LCount = 0;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
 
+    public boolean ready = false;
+
     public Lorry(int maxCapacity, int tLorry){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
@@ -22,8 +24,11 @@ public class Lorry implements Runnable{
 
     public void run(){
         long start = System.nanoTime();
-        while(inventory < maxCapacity){
+        while(!ready){
             try {
+                if(Main.workerThreadGroup.activeCount() == 0){
+                    ready = true;
+                }
                 sleep(tLorry/2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -31,13 +36,18 @@ public class Lorry implements Runnable{
         }
         long end = System.nanoTime();
         long time = (end - start) / 1000000;
+        try {
+            Main.writer.write("inventory " + inventory+"\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         logFullEvent(this.vNumber, time);
 
-        //if lorry is full, miner sets up new lorry
-        Lorry lorry = new Lorry(Main.Lorrys.getLast().maxCapacity,Main.Lorrys.getLast().tLorry);
-        Main.Lorrys.add(lorry);
-        Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
-        lorryThread.start();
+//        //if lorry is full, miner sets up new lorry
+//        Lorry lorry = new Lorry(Main.Lorrys.getLast().maxCapacity,Main.Lorrys.getLast().tLorry);
+//        Main.Lorrys.add(lorry);
+//        Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+//        lorryThread.start();
     }
 
     public int getMaxCapacity() {
