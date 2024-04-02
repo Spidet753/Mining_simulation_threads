@@ -66,6 +66,10 @@ public class Worker implements Runnable {
                     long tBlockMining = (temp2 - temp1) / 1000000;
                     logCarringEvent(wNumber, inventory);
                     logBlockMinedEvent(wNumber, tBlockMining);
+
+                    //put sources into Lorry
+                    putIntoLorry(this.wNumber,this.inventory);
+
                     this.inventorySumOfMined += this.inventory;
                     this.inventory = 0;
 
@@ -75,6 +79,18 @@ public class Worker implements Runnable {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * Method, where worker is putting his inventory into lorry, one source per tLorry
+     * @param wInventory inventory of worker
+     */
+    public void putIntoLorry(int wNumber, int wInventory) throws InterruptedException {
+        Semaphore semaphore = new Semaphore(1);
+        semaphore.w();
+        sleep(Main.timeOfLorry);
+        logPutting(wNumber, wInventory);
+        semaphore.free();
     }
 
     /**
@@ -108,6 +124,18 @@ public class Worker implements Runnable {
     public synchronized void logCarringEvent(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nese " + inventoryCount + " zdrojů.\n");
+        writeToLogFile(logMessage);
+    }
+
+    /**
+     * Log message telling that worker is bringing sources to Lorry
+     * @param workerNumber (int) number of Thread
+     * @param inventoryCount (int) how many sources is he bringing
+     */
+    public synchronized void logPutting(int workerNumber, int inventoryCount){
+        String timeStamp = dateFormatter.format(new Date());
+        String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nakládá " + inventoryCount +
+                                         " zdrojů do Náklaďáku: "+ Main.Lorrys.getLast().vNumber + "\n");
         writeToLogFile(logMessage);
     }
 

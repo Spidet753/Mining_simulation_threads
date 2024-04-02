@@ -2,6 +2,7 @@ import org.apache.commons.cli.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Main {
     public static int numberOfWorkers;
@@ -13,6 +14,9 @@ public class Main {
     public static String outputFile;
     public static BufferedWriter writer;
     public static ThreadGroup workerThreadGroup;
+    public static ThreadGroup lorryThreadGroup;
+
+    public static ArrayList<Lorry> Lorrys;
 
     /**
      * Main method of the program
@@ -36,6 +40,13 @@ public class Main {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        //first lorry instance
+        Lorrys = new ArrayList<>();
+        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
+        Lorrys.add(lorry);
+        Thread lorryThread = new Thread(lorryThreadGroup, lorry);
+        lorryThread.start();
 
         //creating worker Threads
         Worker[] workers = new Worker[numberOfWorkers];
