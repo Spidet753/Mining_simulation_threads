@@ -1,22 +1,25 @@
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import static java.lang.Thread.sleep;
 
+/**
+ * Class that works with Lorry
+ * @author Václav Prokop
+ */
 public class Lorry implements Runnable{
+    //== Private attributes
+    private int tLorry;
+    private int maxCapacity;
+    private volatile int inventory = 0;
+    private static int LCount = 0;
 
-    public int tLorry;
-    public int maxCapacity;
-    public volatile int inventory = 0;
+    //== Public attributes
     public int vNumber;
-    public static int LCount = 0;
-    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-
-    public boolean ready = false;
-
     public long start;
 
+    /**
+     * Constructor
+     * @param maxCapacity maximum capacity of Lorry
+     * @param tLorry how long it takes to lorry get to ferry
+     */
     public Lorry(int maxCapacity, int tLorry){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
@@ -24,6 +27,9 @@ public class Lorry implements Runnable{
     vNumber = LCount;
     }
 
+    /**
+     * Run method for threads
+     */
     public void run(){
         start = System.nanoTime();
         try {
@@ -36,31 +42,27 @@ public class Lorry implements Runnable{
         Thread.currentThread().interrupt();
     }
 
+    /**
+     * Getter of maximum capacity of lorry
+     * @return max capacity
+     */
     public int getMaxCapacity() {
         return maxCapacity;
     }
 
+    /**
+     * Getter of Lorry's instance inventory
+     * @return inventory value (int)
+     */
     public int getInventory() {
         return inventory;
     }
 
-    public void setMaxCapacity(int maxCapacity) {
-        this.maxCapacity = maxCapacity;
-    }
-
-    public void setInventory(int inventory) {
-        this.inventory += inventory;
-    }
-
     /**
-     * Tells the bufferedWriter from Main to write down a message
-     * @param logMessage message to write
+     * Setter of Lorry's instance inventory
+     * @param inventory adds setted inventory to value saved in atributte
      */
-    private static synchronized void writeToLogFile(String logMessage) {
-        try  {
-            Main.writer.write(logMessage);
-        } catch (IOException e) {
-            throw new RuntimeException("Chyba při zápisu do souboru.", e);
-        }
+    public synchronized void setInventory(int inventory) {
+        this.inventory += inventory;
     }
 }

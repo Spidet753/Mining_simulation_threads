@@ -3,10 +3,16 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Class that works with Foreman
+ * @author Václav Prokop
+ */
 public class Foreman implements Runnable{
-    public String file;
-    public static LinkedBlockingQueue<String> blocks;
-    public static int countOfsource = 0;
+
+    //== Private attributes
+    private String file;
+    private static LinkedBlockingQueue<String> blocks;
+    private static int countOfsource = 0;
 
     /**
      * Constructor
@@ -46,7 +52,19 @@ public class Foreman implements Runnable{
         }
     }
 
+    /**
+     * Method that returns all found sources by foreman
+     * @return (int) sum of sources
+     */
     public static int getCountOfsource() {
         return countOfsource;
+    }
+
+    /**
+     * Getter of block found by Foreman
+     * @return block containing sources
+     */
+    public static LinkedBlockingQueue<String> getBlocks() {
+        return blocks;
     }
 }

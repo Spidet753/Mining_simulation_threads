@@ -2,9 +2,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
-
 import static java.lang.Thread.sleep;
 
+/**
+ * Class that works with Workers
+ * @author Václav Prokop
+ */
 public class Worker implements Runnable {
     private final int wNumber;
     private final int timePerX;
@@ -13,11 +16,7 @@ public class Worker implements Runnable {
     private static volatile int inventorySum = 0;
     private int miningTime;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-    private static int count = 0;
     private static int sources = 0;
-    public static volatile boolean wasLast = false;
-
-    public static volatile int doneWorkers = 0;
 
     /**
      * Constructor
@@ -27,7 +26,6 @@ public class Worker implements Runnable {
     public Worker(int wNumber, int timePerX) {
         this.wNumber = wNumber;
         this.timePerX = timePerX;
-        count++;
     }
 
     /**
@@ -35,7 +33,7 @@ public class Worker implements Runnable {
      */
     @Override
     public void run() {
-        while (!Foreman.blocks.isEmpty()) {
+        while (!Foreman.getBlocks().isEmpty()) {
             pickABlock();
         }
         synchronized (Worker.class) {
@@ -48,8 +46,8 @@ public class Worker implements Runnable {
      * Method that gives a worker specific block to work with
      */
     public synchronized void pickABlock() {
-        if (!Foreman.blocks.isEmpty()) {
-            String block = Foreman.blocks.poll();
+        if (!Foreman.getBlocks().isEmpty()) {
+            String block = Foreman.getBlocks().poll();
             if (block != null) {
                 mine(block);
             }
@@ -77,7 +75,7 @@ public class Worker implements Runnable {
                     logBlockMinedEvent(wNumber, tBlockMining);
 
                     //put sources into Lorry
-                    putIntoLorry(this.wNumber,this.inventory);
+                    putIntoLorry(this.inventory);
 
                     this.inventorySumOfMined += this.inventory;
                     this.inventory = 0;
@@ -93,7 +91,7 @@ public class Worker implements Runnable {
      * Method, where worker is putting his inventory into lorry, one source per tLorry
      * @param wInventory inventory of worker
      */
-    public void putIntoLorry(int wNumber, int wInventory) throws InterruptedException {
+    public void putIntoLorry(int wInventory) throws InterruptedException {
         Semaphore semaphore = new Semaphore(1);
         while (wInventory > 0) {
             semaphore.acquire();
@@ -106,43 +104,47 @@ public class Worker implements Runnable {
         }
     }
 
+    /**
+     * Method which creates new lorry, if the current lorry is full,
+     * and solves exception problems with filling
+     */
     public synchronized void fullLorry() {
         synchronized (Worker.class) {
-            Main.emptyLorrys.peek().inventory += 1;
+            Main.getEmptyLorrys().peek().setInventory(1);
             sources += 1;
             logPutting(wNumber, 1);
 
-            if (Main.emptyLorrys.peek().inventory >= Main.emptyLorrys.peek().maxCapacity) {
+            if (Main.getEmptyLorrys().peek().getInventory() >= Main.getEmptyLorrys().peek().getMaxCapacity()) {
 
                 //time to leave
                 long end = System.nanoTime();
-                long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
+                long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
 
                 //add it to readyLorrys
-                Main.readyLorrys.add(Main.emptyLorrys.peek());
+                Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //log it
-                logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
+                logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
 
                 //and create new lorry to go
-                Lorry lorry = new Lorry(Main.capacityOfLorry, Main.timeOfLorry);
-                Main.emptyLorrys.add(lorry);
+                Lorry lorry = new Lorry(Main.getCapacityOfLorry(), Main.getTimeOfLorry());
+                Main.getEmptyLorrys().add(lorry);
                 Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
                 lorryThread.start();
-                Main.emptyLorrys.remove();
+                Main.getEmptyLorrys().remove();
             }
 
-            if (sources >= Foreman.getCountOfsource() && Main.emptyLorrys.peek().inventory != 0) {
+            if (sources >= Foreman.getCountOfsource() && Main.getEmptyLorrys().peek().getInventory() != 0) {
                 //miners mined all sources, time to send last lorry
                 //time to leave
                 long end = System.nanoTime();
-                long temp = (end - Main.emptyLorrys.peek().start) / 1000000;
+                long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
 
                 //add it to readyLorrys
-                Main.readyLorrys.add(Main.emptyLorrys.peek());
+                Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //log it
-                logFullEvent(Main.emptyLorrys.peek().vNumber, temp);
+                logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
             }
         }
     }
@@ -189,7 +191,7 @@ public class Worker implements Runnable {
     public synchronized void logPutting(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nakládá " + inventoryCount +
-                                         " zdrojů do Náklaďáku: "+ Main.emptyLorrys.peek().vNumber + "\n");
+                                         " zdrojů do Náklaďáku: "+ Main.getEmptyLorrys().peek().vNumber + "\n");
         writeToLogFile(logMessage);
     }
 

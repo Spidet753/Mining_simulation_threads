@@ -2,21 +2,28 @@ import org.apache.commons.cli.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Main class
+ * @author Václav Prokop
+ */
 public class Main {
-    public static int numberOfWorkers;
-    public static int timePerWorker;
-    public static int capacityOfLorry;
-    public static int capacityOfFerry;
-    public static int timeOfLorry;
-    public static String inputFile;
-    public static String outputFile;
+
+    //== Private attributes
+    private static int numberOfWorkers;
+    private static int timePerWorker;
+    private static int capacityOfLorry;
+    private static int capacityOfFerry;
+    private static int timeOfLorry;
+    private static String inputFile;
+    private static String outputFile;
+    private static Worker[] workers;
+    private static ThreadGroup workerThreadGroup;
+
+    //== Public attributes
     public static BufferedWriter writer;
-    public static ThreadGroup workerThreadGroup;
     public static ThreadGroup lorryThreadGroup;
-    public static Worker[] workers;
 
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
@@ -71,14 +78,14 @@ public class Main {
                 throw new RuntimeException(e);
             }
         }
-            //end of Main method, writing out important stats into console
-            writer.write("///////////////////////////////\n");
-            writer.write("\npočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
-            for (int i = 0; i <workers.length; i++){
-                System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
-            }
-            writer.close();
-            System.out.println("Program has ended.");
+        //end of Main method, writing out important stats into console
+        writer.write("///////////////////////////////\n");
+        writer.write("\npočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
+        for (int i = 0; i <workers.length; i++){
+            System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
+        }
+        writer.close();
+        System.out.println("Program has ended.");
     }
 
     /**
@@ -146,7 +153,51 @@ public class Main {
         }
     }
 
+    /**
+     * Getter of group of workers thread
+     * @return ThreadGroup of workers
+     */
     public static ThreadGroup getWorkerThreadGroup() {
         return workerThreadGroup;
+    }
+
+    /**
+     * Getter of workers
+     * @return array of workers
+     */
+    public static Worker[] getWorkers() {
+        return workers;
+    }
+
+    /**
+     * Getter of lorrys, that are not full
+     * @return LinkedBlockingQueue (for consistency)
+     */
+    public static LinkedBlockingQueue<Lorry> getEmptyLorrys() {
+        return emptyLorrys;
+    }
+
+    /**
+     * Getter of lorrys, that are full and ready to go
+     * @return LinkedBlockingQueue (for consistency)
+     */
+    public static LinkedBlockingQueue<Lorry> getReadyLorrys() {
+        return readyLorrys;
+    }
+
+    /**
+     * Getter of maximum capacity of lorry
+     * @return (int) capacity
+     */
+    public static int getCapacityOfLorry() {
+        return capacityOfLorry;
+    }
+
+    /**
+     * Getter of lorry's time drive to ferries
+     * @return (int) time
+     */
+    public static int getTimeOfLorry() {
+        return timeOfLorry;
     }
 }
