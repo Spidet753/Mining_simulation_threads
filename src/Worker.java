@@ -120,16 +120,16 @@ public class Worker implements Runnable {
                 long end = System.nanoTime();
                 long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
 
-                //add it to readyLorrys
-                Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
-
                 //log it
                 logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
+
+                //add it to readyLorrys
+                Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //and create new lorry to go
                 Lorry lorry = new Lorry(Main.getCapacityOfLorry(), Main.getTimeOfLorry());
                 Main.getEmptyLorrys().add(lorry);
-                Thread lorryThread = new Thread(Main.lorryThreadGroup, lorry);
+                Thread lorryThread = new Thread(Main.lorryThreadGroup, Main.getEmptyLorrys().peek());
                 lorryThread.start();
                 Main.getEmptyLorrys().remove();
             }
@@ -141,6 +141,8 @@ public class Worker implements Runnable {
                 long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
 
                 //add it to readyLorrys
+                Thread lorryThread = new Thread(Main.lorryThreadGroup, Main.getEmptyLorrys().peek());
+                lorryThread.start();
                 Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //log it
@@ -213,7 +215,7 @@ public class Worker implements Runnable {
      */
     private synchronized void logFullEvent(int vNumber, long time) {
         String timeStamp = dateFormatter.format(new Date());
-        String logMessage = String.format("%s - Náklaďák %d je připraven vyrazit, naplnit ho trvalo " + time + " ms.\n", timeStamp, vNumber);
+        String logMessage = String.format("%s - Náklaďák %d je připraven vyrazit, naplnit ho trvalo přibližně " + time + " ms.\n", timeStamp, vNumber);
         writeToLogFile(logMessage);
     }
 

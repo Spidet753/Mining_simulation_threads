@@ -67,8 +67,6 @@ public class Main {
         drivingLorrys = new LinkedBlockingQueue<>();
         Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
         emptyLorrys.add(lorry);
-        Thread lorryThread = new Thread(lorryThreadGroup, lorry);
-        lorryThread.start();
 
         //we don't want to end the Main thread until other threads are done
         while (workerThreadGroup.activeCount() > 0) {
