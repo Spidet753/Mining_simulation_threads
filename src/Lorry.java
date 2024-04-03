@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import static java.lang.Thread.sleep;
 
@@ -18,11 +19,11 @@ public class Lorry implements Runnable{
     private volatile int inventory = 0;
     private static int LCount = 0;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-    private static LinkedBlockingQueue<Lorry> listOfLorries;
 
     //== Public attributes
     public int vNumber;
     public long start;
+    static Semaphore semaphore = new Semaphore(1);
 
     /**
      * Constructor
@@ -46,7 +47,7 @@ public class Lorry implements Runnable{
         //lorry is driving
         try {
             //TODO SET TIME FOR tLorry
-            sleep((int)(2*Math.random()));
+            sleep((int)(tLorry*Math.random()));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -55,8 +56,7 @@ public class Lorry implements Runnable{
         long end = System.nanoTime();
         long time = (end - start) / 1000000;
         logLorryArrival(vNumber, time);
-
-        fillFerry();
+            fillFerry();
 
     }
 
@@ -64,10 +64,14 @@ public class Lorry implements Runnable{
      * Method that ensures that ferry is filled by lorries, when ferry's
      * capacity is reached, lorries will wait for ferry to come back
      */
-    public synchronized void fillFerry(){
+    public synchronized void fillFerry() {
             long start = System.nanoTime();
-            synchronized (Lorry.class) {
-                if (Main.ferries.peek().getInventory() == Main.ferries.peek().getMaxCapacity() - 1) {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if (Main.ferries.peek().getInventory() == Main.ferries.peek().getMaxCapacity() - 1) {
 
                     //last lorry to count
                     Main.ferries.peek().setInventory(1);
@@ -80,12 +84,14 @@ public class Lorry implements Runnable{
                     long start2 = System.nanoTime();
 
                     //set value to default, and add trasfered sources
-                    Main.ferries.peek().setTrasferedSources(Main.ferries.peek().getSources());
+                    Main.ferries.peek().trasferedSources += Main.ferries.peek().getSources();
+                    Main.ferries.peek().inventory = 0;
+                    Main.ferries.peek().sources = 0;
 
                     //time to travel
                     try {
                         //TODO SET RIGHT TIME
-                        sleep(10);
+                        sleep((int)(tLorry*Math.random()));
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -100,9 +106,9 @@ public class Lorry implements Runnable{
 
                 } else {
                     Main.ferries.peek().setInventory(1);
-                    Main.ferries.peek().setSources(Main.getReadyLorrys().peek().inventory);
+                    Main.ferries.peek().trasferedSources += Main.getReadyLorrys().peek().inventory;
                 }
-            }
+                semaphore.release();
     }
 
     /**

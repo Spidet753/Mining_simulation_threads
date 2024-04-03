@@ -9,6 +9,8 @@ import static java.lang.Thread.sleep;
  * @author Václav Prokop
  */
 public class Worker implements Runnable {
+
+    //== Private attributes
     private final int wNumber;
     private final int timePerX;
     private int inventory = 0;
@@ -17,6 +19,7 @@ public class Worker implements Runnable {
     private int miningTime;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
     private static int sources = 0;
+    static Semaphore semaphore = new Semaphore(1);
 
     /**
      * Constructor
@@ -64,7 +67,7 @@ public class Worker implements Runnable {
         for (int i = blockLength; i > 0; i--) {
             try {
                 //TODO CHANGE MININGTIME
-                miningTime = (int)(10 * Math.random());
+                miningTime = (int)(timePerX * Math.random());
                 sleep(miningTime);
                 this.inventory += 1;
                 logMiningEvent(wNumber, miningTime);
@@ -92,12 +95,10 @@ public class Worker implements Runnable {
      * @param wInventory inventory of worker
      */
     public void putIntoLorry(int wInventory) throws InterruptedException {
-        Semaphore semaphore = new Semaphore(1);
         while (wInventory > 0) {
-            semaphore.acquire();
+
             fullLorry();
             wInventory--;
-            semaphore.release();
         }
     }
 
@@ -106,10 +107,14 @@ public class Worker implements Runnable {
      * and solves exception problems with filling
      */
     public synchronized void fullLorry() {
-        synchronized (Worker.class) {
-            try {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
                 //TODO SET LORRY TIME
-                sleep(0);
+                sleep(10);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -151,7 +156,7 @@ public class Worker implements Runnable {
                 //log it
                 logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
             }
-        }
+        semaphore.release();
     }
 
     /**

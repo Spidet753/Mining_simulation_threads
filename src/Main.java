@@ -83,10 +83,10 @@ public class Main {
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
         writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
-        writer.write("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().ge);
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }
+        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().getTrasferedSources()+ "\n");
         writer.close();
         System.out.println("Program has ended.");
     }
@@ -157,22 +157,6 @@ public class Main {
     }
 
     /**
-     * Getter of group of workers thread
-     * @return ThreadGroup of workers
-     */
-    public static ThreadGroup getWorkerThreadGroup() {
-        return workerThreadGroup;
-    }
-
-    /**
-     * Getter of workers
-     * @return array of workers
-     */
-    public static Worker[] getWorkers() {
-        return workers;
-    }
-
-    /**
      * Getter of lorrys, that are not full
      * @return LinkedBlockingQueue (for consistency)
      */
@@ -202,13 +186,5 @@ public class Main {
      */
     public static int getTimeOfLorry() {
         return timeOfLorry;
-    }
-
-    /**
-     * Getter of ferry's maximun capacity
-     * @return (int) capacity
-     */
-    public static int getCapacityOfFerry() {
-        return capacityOfFerry;
     }
 }

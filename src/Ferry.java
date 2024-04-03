@@ -1,7 +1,3 @@
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import static java.lang.Thread.sleep;
 
 /**
@@ -12,14 +8,9 @@ public class Ferry implements Runnable{
 
     //== Private attributes
     private int maxCapacity;
+    public volatile int trasferedSources = 0;
     public volatile int inventory = 0;
-    private static int FCount = 0;
     public volatile int sources = 0;
-    private volatile int trasferedSources = 0;
-
-    //== Public attributes
-    public int vNumber;
-    public long start;
 
     /**
      * Constructor
@@ -27,9 +18,6 @@ public class Ferry implements Runnable{
      */
     public Ferry(int maxCapacity){
         this.maxCapacity = maxCapacity;
-        FCount++;
-        vNumber = FCount;
-        start = System.nanoTime();
     }
 
     /**
@@ -39,20 +27,11 @@ public class Ferry implements Runnable{
         while(trasferedSources != Foreman.getCountOfsource()){
             while(inventory != maxCapacity){
                 try {
-                    sleep(1);
+                    sleep(0);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-            long start = System.nanoTime();
-
-            //ferry is driving
-            long end = System.nanoTime();
-            long time = (end - start) / 1000000;
-
-            //set default values
-            inventory = 0;
-            sources = 0;
         }
     }
 
@@ -102,6 +81,9 @@ public class Ferry implements Runnable{
         this.trasferedSources += trasferedSources;
     }
 
+    /**
+     * Getter of sources that are in the final position
+     */
     public int getTrasferedSources() {
         return trasferedSources;
     }
