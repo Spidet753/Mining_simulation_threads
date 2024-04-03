@@ -24,11 +24,9 @@ public class Main {
     //== Public attributes
     public static BufferedWriter writer;
     public static ThreadGroup lorryThreadGroup;
-
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
     public static LinkedBlockingQueue<Ferry> ferries;
-
 
     /**
      * Main method of the program
@@ -84,7 +82,8 @@ public class Main {
         }
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
-        writer.write("\npočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
+        writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
+        writer.write("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().ge);
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }

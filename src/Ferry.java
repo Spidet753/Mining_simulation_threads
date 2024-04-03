@@ -10,100 +10,75 @@ import static java.lang.Thread.sleep;
  */
 public class Ferry implements Runnable{
 
-        //== Private attributes
-        private int maxCapacity;
-        public volatile int inventory = 0;
-        private static int FCount = 0;
-        private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-        public int sources = 0;
-        private int trasferedSources = 0;
+    //== Private attributes
+    private int maxCapacity;
+    public volatile int inventory = 0;
+    private static int FCount = 0;
+    public volatile int sources = 0;
+    private volatile int trasferedSources = 0;
 
-        //== Public attributes
-        public int vNumber;
-        public long start;
+    //== Public attributes
+    public int vNumber;
+    public long start;
 
-        /**
-         * Constructor
-         * @param maxCapacity maximum capacity of Ferry
-         */
-        public Ferry(int maxCapacity){
-            this.maxCapacity = maxCapacity;
-            FCount++;
-            vNumber = FCount;
-            start = System.nanoTime();
-        }
+    /**
+     * Constructor
+     * @param maxCapacity maximum capacity of Ferry
+     */
+    public Ferry(int maxCapacity){
+        this.maxCapacity = maxCapacity;
+        FCount++;
+        vNumber = FCount;
+        start = System.nanoTime();
+    }
 
-        /**
-         * Run method for threads
-         */
-        public void run(){
-            while(trasferedSources != Foreman.getCountOfsource()){
-                while(inventory != maxCapacity){
-                    try {
-                        sleep(5);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+    /**
+     * Run method for threads
+     */
+    public void run(){
+        while(trasferedSources != Foreman.getCountOfsource()){
+            while(inventory != maxCapacity){
+                try {
+                    sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                long start = System.nanoTime();
-
-                //ferry is driving
-
-                //Ferry is at the end
-                long end = System.nanoTime();
-                long time = (end - start) / 1000000;
-                logFerryArrival(vNumber, time);
             }
+            long start = System.nanoTime();
 
-            Thread.currentThread().interrupt();
-        }
+            //ferry is driving
+            long end = System.nanoTime();
+            long time = (end - start) / 1000000;
 
-        /**
-         * Getter of maximum capacity of ferry
-         * @return max capacity
-         */
-        public int getMaxCapacity() {
-            return maxCapacity;
+            //set default values
+            inventory = 0;
+            sources = 0;
         }
+    }
 
-        /**
-         * Getter of ferry's instance inventory
-         * @return inventory value (int)
-         */
-        public int getInventory() {
-            return inventory;
-        }
+    /**
+     * Getter of maximum capacity of ferry
+     * @return max capacity
+     */
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
 
-        /**
-         * Setter of ferry's instance inventory
-         * @param inventory adds setted inventory to value saved in atributte
-         */
-        public synchronized void setInventory(int inventory) {
-            this.inventory += inventory;
-        }
+    /**
+     * Getter of ferry's instance inventory
+     * @return inventory value (int)
+     */
+    public int getInventory() {
+        return inventory;
+    }
 
-        /**
-         * Arrival log which sets up output for output file
-         * @param LorryNumber Thread number of lorry
-         * @param time How long it took the lorry to arrive at ferry
-         */
-        private synchronized void logFerryArrival(int LorryNumber, long time) {
-            String timeStamp = dateFormatter.format(new Date());
-            String logMessage = String.format("%s - Náklaďák %d dojel k trajektu, trvalo mu to %d ms.\n", timeStamp, LorryNumber, time);
-            writeToLogFile(logMessage);
-        }
-
-        /**
-         * Tells the bufferedWriter from Main to write down a message
-         * @param logMessage message to write
-         */
-        private static synchronized void writeToLogFile(String logMessage) {
-            try  {
-                Main.writer.write(logMessage);
-            } catch (IOException e) {
-                throw new RuntimeException("Chyba při zápisu do souboru.", e);
-            }
-        }
+    /**
+     * Setter of ferry's instance inventory
+     * @param inventory adds setted inventory to value saved in atributte
+     */
+    public synchronized void setInventory(int inventory) {
+        this.inventory += inventory;
+    }
 
     /**
      * Getter of sources on the ferry
@@ -112,23 +87,22 @@ public class Ferry implements Runnable{
     public int getSources() {
         return sources;
     }
+
     /**
      * Setter of sources on the ferry
      */
-    public void setSources(int sources) {
+    public synchronized void setSources(int sources) {
         this.sources += sources;
     }
-    /**
-     * Getter of sources that are in the final position
-     * @return (int) transfered sources
-     */
-    public int getTrasferedSources() {
-        return trasferedSources;
-    }
+
     /**
      * Setter of sources that are in the final position
      */
-    public void setTrasferedSources(int trasferedSources) {
+    public synchronized void setTrasferedSources(int trasferedSources) {
         this.trasferedSources += trasferedSources;
+    }
+
+    public int getTrasferedSources() {
+        return trasferedSources;
     }
 }
