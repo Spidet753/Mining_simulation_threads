@@ -1,5 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -13,6 +16,7 @@ public class Foreman implements Runnable{
     private String file;
     private static LinkedBlockingQueue<String> blocks;
     private static int countOfsource = 0;
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
 
     /**
      * Constructor
@@ -27,7 +31,7 @@ public class Foreman implements Runnable{
      * the file and analyze it for blocks and sources
      */
     public void run(){
-
+        long start = System.nanoTime();
         File file1 = new File(file);
         blocks = new LinkedBlockingQueue<>();
 
@@ -40,6 +44,11 @@ public class Foreman implements Runnable{
                 countOfsource += temp.length();
 
             }
+            //log found sources and blocks, and time how long it took
+            long end = System.nanoTime();
+            long time = (end - start) / 1000000;
+            logFoundSources(time);
+            logFoundblocks(time);
 
             System.out.println("předák našel: " + (blocks.size()) + " bloků" +
                                "\npředák našel: " + (countOfsource) + " zdrojů" +
@@ -66,5 +75,37 @@ public class Foreman implements Runnable{
      */
     public static LinkedBlockingQueue<String> getBlocks() {
         return blocks;
+    }
+
+    /**
+     * log which sets up output for output file
+     * @param time How long it took the foreman to find all sources
+     */
+    private synchronized void logFoundSources(long time) {
+        String timeStamp = dateFormatter.format(new Date());
+        String logMessage = String.format("%s - Předák našel %d zdrojů, trvalo mu to "+ time +" ms.\n", timeStamp, countOfsource);
+        writeToLogFile(logMessage);
+    }
+
+    /**
+     * log which sets up output for output file
+     * @param time How long it took the foreman to find all blocks
+     */
+    private synchronized void logFoundblocks(long time) {
+        String timeStamp = dateFormatter.format(new Date());
+        String logMessage = String.format("%s - Předák našel %d bloků, trvalo mu to "+ time +" ms.\n", timeStamp, blocks.size());
+        writeToLogFile(logMessage);
+    }
+
+    /**
+     * Tells the bufferedWriter from Main to write down a message
+     * @param logMessage message to write
+     */
+    private static synchronized void writeToLogFile(String logMessage) {
+        try  {
+            Main.writer.write(logMessage);
+        } catch (IOException e) {
+            throw new RuntimeException("Chyba při zápisu do souboru.", e);
+        }
     }
 }
