@@ -46,6 +46,7 @@ public class Lorry implements Runnable{
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         //Lorry is at ferry
         long end = System.nanoTime();
         long time = (end - start) / 1000000;
