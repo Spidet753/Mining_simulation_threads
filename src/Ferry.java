@@ -12,9 +12,11 @@ public class Ferry implements Runnable{
 
         //== Private attributes
         private int maxCapacity;
-        private volatile int inventory = 0;
+        public volatile int inventory = 0;
         private static int FCount = 0;
         private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
+        public int sources = 0;
+        private int trasferedSources = 0;
 
         //== Public attributes
         public int vNumber;
@@ -35,14 +37,24 @@ public class Ferry implements Runnable{
          * Run method for threads
          */
         public void run(){
-            long start = System.nanoTime();
+            while(trasferedSources != Foreman.getCountOfsource()){
+                while(inventory != maxCapacity){
+                    try {
+                        sleep(5);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                long start = System.nanoTime();
 
-            //ferry is driving
+                //ferry is driving
 
-            //Ferry is at the end
-            long end = System.nanoTime();
-            long time = (end - start) / 1000000;
-            logFerryArrival(vNumber, time);
+                //Ferry is at the end
+                long end = System.nanoTime();
+                long time = (end - start) / 1000000;
+                logFerryArrival(vNumber, time);
+            }
+
             Thread.currentThread().interrupt();
         }
 
@@ -92,4 +104,31 @@ public class Ferry implements Runnable{
                 throw new RuntimeException("Chyba při zápisu do souboru.", e);
             }
         }
+
+    /**
+     * Getter of sources on the ferry
+     * @return (int) sources
+     */
+    public int getSources() {
+        return sources;
+    }
+    /**
+     * Setter of sources on the ferry
+     */
+    public void setSources(int sources) {
+        this.sources += sources;
+    }
+    /**
+     * Getter of sources that are in the final position
+     * @return (int) transfered sources
+     */
+    public int getTrasferedSources() {
+        return trasferedSources;
+    }
+    /**
+     * Setter of sources that are in the final position
+     */
+    public void setTrasferedSources(int trasferedSources) {
+        this.trasferedSources += trasferedSources;
+    }
 }

@@ -27,6 +27,7 @@ public class Main {
 
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
+    public static LinkedBlockingQueue<Ferry> ferries;
 
 
     /**
@@ -51,6 +52,13 @@ public class Main {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        //Ferry instance
+        Ferry ferry = new Ferry(capacityOfFerry);
+        ferries = new LinkedBlockingQueue<>();
+        ferries.add(ferry);
+        Thread ferryThread = new Thread(ferry);
+        ferryThread.start();
 
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
