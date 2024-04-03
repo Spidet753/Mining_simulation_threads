@@ -52,7 +52,6 @@ public class Lorry implements Runnable{
         long time = (end - start) / 1000000;
         logFerryArrival(vNumber, time);
 
-        System.out.println(this.inventory+ " " + LCount);
         Thread.currentThread().interrupt();
     }
 
@@ -101,5 +100,9 @@ public class Lorry implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException("Chyba při zápisu do souboru.", e);
         }
+    }
+
+    public int gettLorry() {
+        return tLorry;
     }
 }

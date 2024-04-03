@@ -64,15 +64,15 @@ public class Worker implements Runnable {
         for (int i = blockLength; i > 0; i--) {
             try {
                 //TODO CHANGE MININGTIME
-                miningTime = (int)(0 * Math.random());
+                miningTime = (int)(10 * Math.random());
                 sleep(miningTime);
                 this.inventory += 1;
                 logMiningEvent(wNumber, miningTime);
                 if(i == 1){
                     long temp2 = System.nanoTime();
                     long tBlockMining = (temp2 - temp1) / 1000000;
-                    logCarringEvent(wNumber, inventory);
                     logBlockMinedEvent(wNumber, tBlockMining);
+                    logCarringEvent(wNumber, inventory);
 
                     //put sources into Lorry
                     putIntoLorry(this.inventory);
@@ -95,10 +95,7 @@ public class Worker implements Runnable {
         Semaphore semaphore = new Semaphore(1);
         while (wInventory > 0) {
             semaphore.acquire();
-            //TODO SET LORRY TIME
-            sleep(1);
             fullLorry();
-
             wInventory--;
             semaphore.release();
         }
@@ -110,6 +107,12 @@ public class Worker implements Runnable {
      */
     public synchronized void fullLorry() {
         synchronized (Worker.class) {
+            try {
+                //TODO SET LORRY TIME
+                sleep(0);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Main.getEmptyLorrys().peek().setInventory(1);
             sources += 1;
             logPutting(wNumber, 1);

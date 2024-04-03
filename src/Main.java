@@ -28,7 +28,6 @@ public class Main {
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
     public static LinkedBlockingQueue<Lorry> readyLorrys;
 
-    public static LinkedBlockingQueue<Lorry> drivingLorrys;
 
     /**
      * Main method of the program
@@ -64,7 +63,6 @@ public class Main {
         //first lorry instance
         emptyLorrys = new LinkedBlockingQueue<>();
         readyLorrys = new LinkedBlockingQueue<>();
-        drivingLorrys = new LinkedBlockingQueue<>();
         Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
         emptyLorrys.add(lorry);
 
@@ -197,5 +195,13 @@ public class Main {
      */
     public static int getTimeOfLorry() {
         return timeOfLorry;
+    }
+
+    /**
+     * Getter of ferry's maximun capacity
+     * @return (int) capacity
+     */
+    public static int getCapacityOfFerry() {
+        return capacityOfFerry;
     }
 }
