@@ -132,7 +132,7 @@ public class Worker implements Runnable {
             try {
                 //putting lasts 1 second
                 semaphore.acquire();
-                sleep(0);
+                sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
