@@ -13,6 +13,7 @@ public class Ferry implements Runnable{
     public volatile int trasferedSources = 0;
     public volatile int inventory = 0;
     public volatile int sources = 0;
+    public long start = 0;
 
     /**
      * Constructor
@@ -34,6 +35,7 @@ public class Ferry implements Runnable{
                     throw new RuntimeException(e);
                 }
             }
+            start = System.nanoTime();
         }
     }
 

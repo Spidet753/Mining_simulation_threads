@@ -42,7 +42,6 @@ public class Lorry implements Runnable{
 
         //lorry is driving
         try {
-            //TODO SET TIME FOR tLorry
             sleep((int)(tLorry*Math.random()));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -61,7 +60,6 @@ public class Lorry implements Runnable{
      * capacity is reached, lorries will wait for ferry to come back
      */
     public synchronized void fillFerry() {
-        long start = System.nanoTime();
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
@@ -69,16 +67,15 @@ public class Lorry implements Runnable{
         }
 
         if (Main.ferries.peek().getInventory() == Main.ferries.peek().getMaxCapacity() - 1) {
+            //log of departuring
+            long end = System.nanoTime();
+            long temp = (end - Main.ferries.peek().start) / 1000000;
+            logFerryDeparture(temp);
+            long start2 = System.nanoTime();
 
             //last lorry to count
             Main.ferries.peek().setInventory(1);
             Main.ferries.peek().setSources(this.inventory);
-
-            //log of departuring
-            long end = System.nanoTime();
-            long temp = (end - start) / 1000000;
-            logFerryDeparture(temp);
-            long start2 = System.nanoTime();
 
             //set value to default, and add trasfered sources
             Main.ferries.peek().trasferedSources += Main.ferries.peek().getSources();

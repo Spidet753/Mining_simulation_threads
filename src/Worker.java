@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.Semaphore;
+
 import static java.lang.Thread.sleep;
 
 /**
@@ -18,6 +20,7 @@ public class Worker implements Runnable {
     private int miningTime;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
     private static int sources = 0;
+    private static Semaphore semaphore = new Semaphore(1, true);
 
     /**
      * Constructor
@@ -93,9 +96,9 @@ public class Worker implements Runnable {
      */
     public void putIntoLorry(int wInventory) throws InterruptedException {
         while (wInventory > 0) {
-
-            fullLorry();
-            wInventory--;
+                fullLorry();
+                notifyAll();
+                wInventory--;
         }
     }
 
@@ -104,9 +107,9 @@ public class Worker implements Runnable {
      * and solves exception problems with filling
      */
     public void fullLorry() {
-       synchronized (Worker.class) {
             try {
                 //putting lasts 1 second
+                semaphore.acquire();
                 sleep(0);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -149,7 +152,7 @@ public class Worker implements Runnable {
                 //log it
                 logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
             }
-       }
+            semaphore.release();
     }
 
     /**

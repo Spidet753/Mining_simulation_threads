@@ -53,6 +53,7 @@ public class Main {
 
         //Ferry instance
         Ferry ferry = new Ferry(capacityOfFerry);
+        ferry.start = System.nanoTime();
         ferries = new LinkedBlockingQueue<>();
         ferries.add(ferry);
         Thread ferryThread = new Thread(ferry);
