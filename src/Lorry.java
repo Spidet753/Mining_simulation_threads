@@ -83,7 +83,7 @@ public class Lorry implements Runnable{
      * Method that ensures that ferry is filled by lorries, when ferry's
      * capacity is reached, lorries will wait for ferry to come back
      */
-    public synchronized void fillFerry() {
+    public void fillFerry() {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
