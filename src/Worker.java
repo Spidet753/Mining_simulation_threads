@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
-
 import static java.lang.Thread.sleep;
 
 /**
@@ -12,14 +11,41 @@ import static java.lang.Thread.sleep;
 public class Worker implements Runnable {
 
     //== Private attributes
+    /**
+     * Number of the current instance
+     */
     private final int wNumber;
+    /**
+     * Time, how long it could take to mine a source
+     */
     private final int timePerX;
+    /**
+     * How many sources is worker carrying
+     */
     private int inventory = 0;
+    /**
+     * How many sources has worker already mined
+     */
     private int inventorySumOfMined = 0;
+    /**
+     * How many sources all workers mined together
+     */
     private static volatile int inventorySum = 0;
+    /**
+     * Real time per source to mine
+     */
     private int miningTime;
+    /**
+     * Date format used with milliseconds used in the output file
+     */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
+    /**
+     * Mined sources by workers
+     */
     private static int sources = 0;
+    /**
+     * Semaphore used to route traffic with fair order
+     */
     private static Semaphore semaphore = new Semaphore(1, true);
 
     /**
@@ -40,10 +66,7 @@ public class Worker implements Runnable {
         while (!Foreman.getBlocks().isEmpty()) {
             pickABlock();
         }
-        synchronized (Worker.class) {
-            inventorySum += inventorySumOfMined;
-        }
-        Thread.currentThread().interrupt();
+        inventorySum += inventorySumOfMined;
     }
 
     /**
@@ -96,9 +119,8 @@ public class Worker implements Runnable {
      */
     public void putIntoLorry(int wInventory) throws InterruptedException {
         while (wInventory > 0) {
-                fullLorry();
-                notifyAll();
-                wInventory--;
+            fullLorry();
+            wInventory--;
         }
     }
 
@@ -110,7 +132,7 @@ public class Worker implements Runnable {
             try {
                 //putting lasts 1 second
                 semaphore.acquire();
-                sleep(0);
+                sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -133,7 +155,7 @@ public class Worker implements Runnable {
                 //and create new lorry to go
                 Lorry lorry = new Lorry(Main.getCapacityOfLorry(), Main.getTimeOfLorry());
                 Main.getEmptyLorrys().add(lorry);
-                Thread lorryThread = new Thread(Main.lorryThreadGroup, Main.getEmptyLorrys().peek());
+                Thread lorryThread = new Thread(Main.getEmptyLorrys().peek());
                 lorryThread.start();
                 Main.getEmptyLorrys().remove();
             }
@@ -145,7 +167,7 @@ public class Worker implements Runnable {
                 long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
 
                 //add it to readyLorrys
-                Thread lorryThread = new Thread(Main.lorryThreadGroup, Main.getEmptyLorrys().peek());
+                Thread lorryThread = new Thread(Main.getEmptyLorrys().peek());
                 lorryThread.start();
                 Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 

@@ -13,9 +13,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Foreman implements Runnable{
 
     //== Private attributes
+    /**
+     * input file, that foreman has to go through
+     */
     private String file;
+    /**
+     * blocks, that foreman found in input file
+     */
     private static LinkedBlockingQueue<String> blocks;
+    /**
+     * all sources, that foreman found
+     */
     private static int countOfsource = 0;
+    /**
+     * Date format used with milliseconds used in the output file
+     */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
 
     /**

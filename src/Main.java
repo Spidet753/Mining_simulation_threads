@@ -11,21 +11,59 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Main {
 
     //== Private attributes
+    /**
+     * Number of workers from input file
+     */
     private static int numberOfWorkers;
+    /**
+     * time to mine a source from input file
+     */
     private static int timePerWorker;
+    /**
+     * Max capacity of lorry from input file
+     */
     private static int capacityOfLorry;
+    /**
+     * Max capacity of ferry from input file
+     */
     private static int capacityOfFerry;
+    /**
+     * time to drive to ferry from input file
+     */
     private static int timeOfLorry;
+    /**
+     * input file loaded from arguments
+     */
     private static String inputFile;
+    /**
+     * output file set from arguments
+     */
     private static String outputFile;
+    /**
+     * array of workers working in the simulation
+     */
     private static Worker[] workers;
+    /**
+     * ThreadGroup of workers to know they ended their work
+     */
     private static ThreadGroup workerThreadGroup;
 
     //== Public attributes
+    /**
+     * BufferedWriter for writing into output file
+     */
     public static BufferedWriter writer;
-    public static ThreadGroup lorryThreadGroup;
+    /**
+     * Queue of empty lorries
+     */
     public static LinkedBlockingQueue<Lorry> emptyLorrys;
+    /**
+     * Queue of full lorries
+     */
     public static LinkedBlockingQueue<Lorry> readyLorrys;
+    /**
+     * Queue of ferries
+     */
     public static LinkedBlockingQueue<Ferry> ferries;
 
     /**

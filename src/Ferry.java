@@ -7,12 +7,27 @@ import static java.lang.Thread.sleep;
 public class Ferry implements Runnable{
 
     //== Private attributes
+    /**
+     * Maximum capacity of ferry
+     */
     private int maxCapacity;
 
     //== Public attributes
+    /**
+     * Sources that are in the final position
+     */
     public volatile int trasferedSources = 0;
+    /**
+     * capacity of ferry right now
+     */
     public volatile int inventory = 0;
+    /**
+     * Sources, that ferry is carrying right now
+     */
     public volatile int sources = 0;
+    /**
+     * Moment, when ferry is ready to fill
+     */
     public long start = 0;
 
     /**

@@ -10,15 +10,39 @@ import static java.lang.Thread.sleep;
  */
 public class Lorry implements Runnable{
     //== Private attributes
+    /**
+     * Time, how long is lorry driving
+     */
     private int tLorry;
+    /**
+     * Maximum capacity of lorry
+     */
     private int maxCapacity;
+    /**
+     * Capacity that is used right now
+     */
     private volatile int inventory = 0;
+    /**
+     * Number of created instances
+     */
     private static int LCount = 0;
+    /**
+     * Date format used with milliseconds used in the output file
+     */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
 
     //== Public attributes
+    /**
+     * Number of the current instance
+     */
     public int vNumber;
+    /**
+     * Time when lorry instance was created
+     */
     public long start;
+    /**
+     * Semaphore used to route traffic
+     */
     static Semaphore semaphore = new Semaphore(1);
 
     /**
@@ -158,7 +182,7 @@ public class Lorry implements Runnable{
     public void logFerryDeparture(long time){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Trajekt odjíždí, trvalo ho naplnit %d ms.\n", timeStamp, time);
-        System.out.println(timeStamp + " - Vyjíždí přívoz.\n");
+        System.out.println(timeStamp + " - Vyjíždí trajekt.\n");
         writeToLogFile(logMessage);
     }
 
