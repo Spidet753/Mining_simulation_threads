@@ -72,7 +72,7 @@ public class Worker implements Runnable {
     /**
      * Method that gives a worker specific block to work with
      */
-    public synchronized void pickABlock() {
+    public void pickABlock() {
         if (!Foreman.getBlocks().isEmpty()) {
             String block = Foreman.getBlocks().poll();
             if (block != null) {
