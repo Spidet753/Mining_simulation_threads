@@ -8,6 +8,8 @@ public class Ferry implements Runnable{
 
     //== Private attributes
     private int maxCapacity;
+
+    //== Public attributes
     public volatile int trasferedSources = 0;
     public volatile int inventory = 0;
     public volatile int sources = 0;
@@ -72,13 +74,6 @@ public class Ferry implements Runnable{
      */
     public synchronized void setSources(int sources) {
         this.sources += sources;
-    }
-
-    /**
-     * Setter of sources that are in the final position
-     */
-    public synchronized void setTrasferedSources(int trasferedSources) {
-        this.trasferedSources += trasferedSources;
     }
 
     /**

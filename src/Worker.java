@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Semaphore;
 import static java.lang.Thread.sleep;
 
 /**
@@ -19,7 +18,6 @@ public class Worker implements Runnable {
     private int miningTime;
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
     private static int sources = 0;
-    static Semaphore semaphore = new Semaphore(1);
 
     /**
      * Constructor
@@ -66,7 +64,6 @@ public class Worker implements Runnable {
         int blockLength = block.length();
         for (int i = blockLength; i > 0; i--) {
             try {
-                //TODO CHANGE MININGTIME
                 miningTime = (int)(timePerX * Math.random());
                 sleep(miningTime);
                 this.inventory += 1;
@@ -106,15 +103,11 @@ public class Worker implements Runnable {
      * Method which creates new lorry, if the current lorry is full,
      * and solves exception problems with filling
      */
-    public synchronized void fullLorry() {
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-                //TODO SET LORRY TIME
-                sleep(10);
+    public void fullLorry() {
+       synchronized (Worker.class) {
+            try {
+                //putting lasts 1 second
+                sleep(0);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -156,7 +149,7 @@ public class Worker implements Runnable {
                 //log it
                 logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp);
             }
-        semaphore.release();
+       }
     }
 
     /**
@@ -164,7 +157,7 @@ public class Worker implements Runnable {
      * @param workerNumber Thread number of worker
      * @param miningTime How long it took the worker to mine a source
      */
-    private synchronized void logMiningEvent(int workerNumber, int miningTime) {
+    private void logMiningEvent(int workerNumber, int miningTime) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Dělník %d vytěžil zdroj, trvalo mu to %d ms.\n", timeStamp, workerNumber, miningTime);
         writeToLogFile(logMessage);
@@ -174,7 +167,7 @@ public class Worker implements Runnable {
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static synchronized void writeToLogFile(String logMessage) {
+    private static void writeToLogFile(String logMessage) {
         try  {
             Main.writer.write(logMessage);
         } catch (IOException e) {
@@ -187,7 +180,7 @@ public class Worker implements Runnable {
      * @param workerNumber (int) number of Thread
      * @param inventoryCount (int) how many sources is he bringing
      */
-    public synchronized void logCarringEvent(int workerNumber, int inventoryCount){
+    public void logCarringEvent(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nese " + inventoryCount + " zdrojů.\n");
         writeToLogFile(logMessage);
@@ -198,7 +191,7 @@ public class Worker implements Runnable {
      * @param workerNumber (int) number of Thread
      * @param inventoryCount (int) how many sources is he bringing
      */
-    public synchronized void logPutting(int workerNumber, int inventoryCount){
+    public void logPutting(int workerNumber, int inventoryCount){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nakládá " + inventoryCount +
                                          " zdrojů do Náklaďáku: "+ Main.getEmptyLorrys().peek().vNumber + "\n");
@@ -210,7 +203,7 @@ public class Worker implements Runnable {
      * @param workerNumber (int) Thread number which completed a block
      * @param time (long) how long did it take in milliseconds
      */
-    public synchronized void logBlockMinedEvent(int workerNumber, long time){
+    public void logBlockMinedEvent(int workerNumber, long time){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " vytěžil celý blok, trvalo mu to " + time + " ms.\n");
         writeToLogFile(logMessage);
@@ -221,7 +214,7 @@ public class Worker implements Runnable {
      * @param vNumber Thread number of lorry
      * @param time How long it took to workers to full that lorry
      */
-    private synchronized void logFullEvent(int vNumber, long time) {
+    private void logFullEvent(int vNumber, long time) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d je připraven vyrazit, naplnit ho trvalo přibližně " + time + " ms.\n", timeStamp, vNumber);
         writeToLogFile(logMessage);

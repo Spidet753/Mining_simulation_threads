@@ -1,11 +1,7 @@
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
-
 import static java.lang.Thread.sleep;
 
 /**
@@ -65,50 +61,50 @@ public class Lorry implements Runnable{
      * capacity is reached, lorries will wait for ferry to come back
      */
     public synchronized void fillFerry() {
-            long start = System.nanoTime();
+        long start = System.nanoTime();
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+         throw new RuntimeException(e);
         }
+
         if (Main.ferries.peek().getInventory() == Main.ferries.peek().getMaxCapacity() - 1) {
 
-                    //last lorry to count
-                    Main.ferries.peek().setInventory(1);
-                    Main.ferries.peek().setSources(this.inventory);
+            //last lorry to count
+            Main.ferries.peek().setInventory(1);
+            Main.ferries.peek().setSources(this.inventory);
 
-                    //log of departuring
-                    long end = System.nanoTime();
-                    long temp = (end - start) / 1000000;
-                    logFerryDeparture(temp);
-                    long start2 = System.nanoTime();
+            //log of departuring
+            long end = System.nanoTime();
+            long temp = (end - start) / 1000000;
+            logFerryDeparture(temp);
+            long start2 = System.nanoTime();
 
-                    //set value to default, and add trasfered sources
-                    Main.ferries.peek().trasferedSources += Main.ferries.peek().getSources();
-                    Main.ferries.peek().inventory = 0;
-                    Main.ferries.peek().sources = 0;
+            //set value to default, and add trasfered sources
+            Main.ferries.peek().trasferedSources += Main.ferries.peek().getSources();
+            Main.ferries.peek().inventory = 0;
+            Main.ferries.peek().sources = 0;
 
-                    //time to travel
-                    try {
-                        //TODO SET RIGHT TIME
-                        sleep((int)(tLorry*Math.random()));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    long end2 = System.nanoTime();
-                    long temp2 = (end2 - start2) / 1000000;
+            //time to travel tLorry time
+            try {
+                sleep((int)(tLorry*Math.random()));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            long end2 = System.nanoTime();
+            long temp2 = (end2 - start2) / 1000000;
 
-                    //lorries are leaving
-                    for (int i = 0; i < Main.ferries.peek().getMaxCapacity(); i++) {
-                        logLorryEnds(Main.getReadyLorrys().peek().vNumber, temp2);
-                        Main.getReadyLorrys().remove();
-                    }
+            //lorries are leaving
+            for (int i = 0; i < Main.ferries.peek().getMaxCapacity(); i++) {
+                logLorryEnds(Main.getReadyLorrys().peek().vNumber, temp2);
+                Main.getReadyLorrys().remove();
+            }
 
-                } else {
-                    Main.ferries.peek().setInventory(1);
-                    Main.ferries.peek().trasferedSources += Main.getReadyLorrys().peek().inventory;
-                }
-                semaphore.release();
+        } else {
+            Main.ferries.peek().setInventory(1);
+            Main.ferries.peek().trasferedSources += Main.getReadyLorrys().peek().inventory;
+        }
+        semaphore.release();
     }
 
     /**
@@ -140,7 +136,7 @@ public class Lorry implements Runnable{
      * @param LorryNumber Thread number of lorry
      * @param time How long it took the lorry to arrive at ferry
      */
-    private synchronized void logLorryArrival(int LorryNumber, long time) {
+    private void logLorryArrival(int LorryNumber, long time) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d dojel k trajektu, trvalo mu to %d ms.\n", timeStamp, LorryNumber, time);
         writeToLogFile(logMessage);
@@ -150,7 +146,7 @@ public class Lorry implements Runnable{
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static synchronized void writeToLogFile(String logMessage) {
+    private static void writeToLogFile(String logMessage) {
         try  {
             Main.writer.write(logMessage);
         } catch (IOException e) {
@@ -169,6 +165,11 @@ public class Lorry implements Runnable{
         writeToLogFile(logMessage);
     }
 
+    /**
+     * Log of lorries driving to the end
+     * @param vNumber (int) number of lorry
+     * @param time (int) how long it took
+     */
     public void logLorryEnds(int vNumber, long time){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d přijel na místo určení, trvalo mu to %d ms.\n", timeStamp, vNumber, time);
