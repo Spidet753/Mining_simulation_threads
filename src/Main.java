@@ -71,7 +71,7 @@ public class Main {
      * @param args arguments that are needed for the application to run
      * @throws IOException while writing to output file
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         //group to know if all the threads are dead or alive
         workerThreadGroup = new ThreadGroup("workers");
         loadInput(args);
@@ -119,6 +119,7 @@ public class Main {
                 throw new RuntimeException(e);
             }
         }
+        ferryThread.join();
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
         writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");

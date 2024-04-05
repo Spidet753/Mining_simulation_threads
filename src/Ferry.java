@@ -42,7 +42,7 @@ public class Ferry implements Runnable{
      * Run method for threads
      */
     public void run(){
-        while(trasferedSources != Foreman.getCountOfsource()){
+        while(trasferedSources >= Foreman.getCountOfsource()){
             while(inventory != maxCapacity){
                 try {
                     sleep(0);
