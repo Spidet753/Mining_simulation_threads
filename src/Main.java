@@ -10,22 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Main {
 
-    //== Private attributes
-
-    /**
-     * Max capacity of lorry from input file
-     */
-    private static int capacityOfLorry;
-    /**
-     * time to drive to ferry from input file
-     */
-    private static int timeOfLorry;
-
-    /**
-     * array of workers working in the simulation
-     */
-    private static Worker[] workers;
-
     //== Public attributes
     /**
      * Queue of empty lorries
@@ -35,10 +19,6 @@ public class Main {
      * Queue of full lorries
      */
     public static LinkedBlockingQueue<Lorry> readyLorrys;
-    /**
-     * Queue of ferries
-     */
-    public static LinkedBlockingQueue<Ferry> ferries;
 
     /**
      * Main method of the program
@@ -48,12 +28,13 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         //group to know if all the threads are dead or alive
         ThreadGroup workerThreadGroup = new ThreadGroup("workers");
+        Worker[] workers;
         String inputFile;
         String outputFile;
         int numberOfWorkers;
         int timePerWorker;
-        int capacityOfLorry1;
-        int timeOfLorry1;
+        int capacityOfLorry;
+        int timeOfLorry;
         int capacityOfFerry;
 
         Options options = new Options();
@@ -95,10 +76,8 @@ public class Main {
             outputFile = cmd.getOptionValue("output");
             numberOfWorkers = Integer.parseInt(cmd.getOptionValue("cWorker"));
             timePerWorker = Integer.parseInt(cmd.getOptionValue("tWorker"));
-            capacityOfLorry1 = Integer.parseInt(cmd.getOptionValue("capLorry"));
-            capacityOfLorry  = capacityOfLorry1;
-            timeOfLorry1 = Integer.parseInt(cmd.getOptionValue("tLorry"));
-            timeOfLorry = timeOfLorry1;
+            capacityOfLorry = Integer.parseInt(cmd.getOptionValue("capLorry"));
+            timeOfLorry = Integer.parseInt(cmd.getOptionValue("tLorry"));
             capacityOfFerry = Integer.parseInt(cmd.getOptionValue("capFerry"));
             System.out.println(
                     "---------------------------"+
@@ -133,15 +112,13 @@ public class Main {
         //Ferry instance
         Ferry ferry = new Ferry(capacityOfFerry);
         ferry.start = System.nanoTime();
-        ferries = new LinkedBlockingQueue<>();
-        ferries.add(ferry);
         Thread ferryThread = new Thread(ferry);
         ferryThread.start();
 
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
         for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker, writer);
+            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, capacityOfLorry, timeOfLorry, ferry);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
@@ -149,7 +126,7 @@ public class Main {
         //first lorry instance
         emptyLorrys = new LinkedBlockingQueue<>();
         readyLorrys = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer);
+        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer, ferry);
         emptyLorrys.add(lorry);
 
         //we don't want to end the Main thread until other threads are done
@@ -167,7 +144,7 @@ public class Main {
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }
-        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().getTrasferedSources()+ "\n");
+        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferry.getTrasferedSources()+ "\n");
         writer.close();
         System.out.println("Program is ending.");
     }
@@ -186,21 +163,5 @@ public class Main {
      */
     public static LinkedBlockingQueue<Lorry> getReadyLorrys() {
         return readyLorrys;
-    }
-
-    /**
-     * Getter of maximum capacity of lorry
-     * @return (int) capacity
-     */
-    public static int getCapacityOfLorry() {
-        return capacityOfLorry;
-    }
-
-    /**
-     * Getter of lorry's time drive to ferries
-     * @return (int) time
-     */
-    public static int getTimeOfLorry() {
-        return timeOfLorry;
     }
 }

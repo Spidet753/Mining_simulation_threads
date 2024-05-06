@@ -50,16 +50,25 @@ public class Worker implements Runnable {
     private static Semaphore semaphore = new Semaphore(1, true);
 
     private BufferedWriter writer;
+    private Foreman foreman;
 
+    private int lorryCapacity;
+    private int lorryTime;
+
+    private Ferry ferry;
     /**
      * Constructor
      * @param wNumber number of thread
      * @param timePerX how long it takes to mine a source
      */
-    public Worker(int wNumber, int timePerX, BufferedWriter writer) {
+    public Worker(int wNumber, int timePerX, BufferedWriter writer, Foreman foreman, int lorryCapacity, int lorryTime, Ferry ferry) {
         this.wNumber = wNumber;
         this.timePerX = timePerX;
         this.writer = writer;
+        this.foreman = foreman;
+        this.lorryCapacity = lorryCapacity;
+        this.lorryTime = lorryTime;
+        this.ferry = ferry;
     }
 
     /**
@@ -67,7 +76,7 @@ public class Worker implements Runnable {
      */
     @Override
     public void run() {
-        while (!Foreman.getBlocks().isEmpty()) {
+        while (!foreman.getBlocks().isEmpty()) {
             pickABlock();
         }
         inventorySum += inventorySumOfMined;
@@ -77,8 +86,8 @@ public class Worker implements Runnable {
      * Method that gives a worker specific block to work with
      */
     public void pickABlock() {
-        if (!Foreman.getBlocks().isEmpty()) {
-            String block = Foreman.getBlocks().poll();
+        if (!foreman.getBlocks().isEmpty()) {
+            String block = foreman.getBlocks().poll();
             if (block != null) {
                 mine(block);
             }
@@ -96,7 +105,7 @@ public class Worker implements Runnable {
             try {
                 miningTime = (int)(timePerX * Math.random());
                 sleep(miningTime);
-                this.inventory += 1;
+                inventory += 1;
                 logMiningEvent(wNumber, miningTime, writer);
                 if(i == 1){
                     long temp2 = System.nanoTime();
@@ -107,8 +116,8 @@ public class Worker implements Runnable {
                     //put sources into Lorry
                     putIntoLorry(this.inventory);
 
-                    this.inventorySumOfMined += this.inventory;
-                    this.inventory = 0;
+                    inventorySumOfMined += this.inventory;
+                    inventory = 0;
                     break;
                 }
             } catch (InterruptedException e) {
@@ -148,16 +157,16 @@ public class Worker implements Runnable {
 
                 //time to leave
                 long end = System.nanoTime();
-                long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
+                long temp = (end - Main.getEmptyLorrys().peek().getStart()) / 1000000;
 
                 //log it
-                logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp, writer);
+                logFullEvent(Main.getEmptyLorrys().peek().getvNumber(), temp, writer);
 
                 //add it to readyLorrys
                 Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //and create new lorry to go
-                Lorry lorry = new Lorry(Main.getCapacityOfLorry(), Main.getTimeOfLorry(), writer);
+                Lorry lorry = new Lorry(lorryCapacity, lorryTime, writer, ferry);
                 Main.getEmptyLorrys().add(lorry);
                 Thread lorryThread = new Thread(Main.getEmptyLorrys().peek());
                 lorryThread.start();
@@ -168,7 +177,7 @@ public class Worker implements Runnable {
                 //miners mined all sources, time to send last lorry
                 //time to leave
                 long end = System.nanoTime();
-                long temp = (end - Main.getEmptyLorrys().peek().start) / 1000000;
+                long temp = (end - Main.getEmptyLorrys().peek().getStart()) / 1000000;
 
                 //add it to readyLorrys
                 Thread lorryThread = new Thread(Main.getEmptyLorrys().peek());
@@ -176,7 +185,7 @@ public class Worker implements Runnable {
                 Main.getReadyLorrys().add(Main.getEmptyLorrys().peek());
 
                 //log it
-                logFullEvent(Main.getEmptyLorrys().peek().vNumber, temp, writer);
+                logFullEvent(Main.getEmptyLorrys().peek().getvNumber(), temp, writer);
             }
             semaphore.release();
     }
@@ -196,7 +205,7 @@ public class Worker implements Runnable {
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static void writeToLogFile(String logMessage, BufferedWriter writer) {
+    private void writeToLogFile(String logMessage, BufferedWriter writer) {
         try  {
             writer.write(logMessage);
         } catch (IOException e) {
@@ -223,7 +232,7 @@ public class Worker implements Runnable {
     public void logPutting(int workerNumber, int inventoryCount, BufferedWriter writer){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format(timeStamp + " - Dělník " + workerNumber + " nakládá " + inventoryCount +
-                                         " zdrojů do Náklaďáku: "+ Main.getEmptyLorrys().peek().vNumber + "\n");
+                                         " zdrojů do Náklaďáku: "+ Main.getEmptyLorrys().peek().getvNumber() + "\n");
         writeToLogFile(logMessage, writer);
     }
 

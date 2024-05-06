@@ -21,7 +21,7 @@ public class Foreman implements Runnable{
     /**
      * blocks, that foreman found in input file
      */
-    private static LinkedBlockingQueue<String> blocks;
+    private LinkedBlockingQueue<String> blocks;
     /**
      * all sources, that foreman found
      */
@@ -92,7 +92,7 @@ public class Foreman implements Runnable{
      * Getter of block found by Foreman
      * @return block containing sources
      */
-    public static LinkedBlockingQueue<String> getBlocks() {
+    public LinkedBlockingQueue<String> getBlocks() {
         return blocks;
     }
 
@@ -120,7 +120,7 @@ public class Foreman implements Runnable{
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private synchronized void writeToLogFile(String logMessage) {
+    private void writeToLogFile(String logMessage) {
         try  {
             writer.write(logMessage);
         } catch (IOException e) {

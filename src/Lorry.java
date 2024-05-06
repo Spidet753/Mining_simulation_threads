@@ -36,30 +36,33 @@ public class Lorry implements Runnable{
     /**
      * Number of the current instance
      */
-    public int vNumber;
+    private final int vNumber;
     /**
      * Time when lorry instance was created
      */
-    public long start;
+    private long start;
     /**
      * Semaphore used to route traffic
      */
-    static Semaphore semaphore = new Semaphore(1);
+    private static Semaphore semaphore = new Semaphore(1);
 
     private BufferedWriter writer;
+
+    private Ferry ferry;
 
     /**
      * Constructor
      * @param maxCapacity maximum capacity of Lorry
      * @param tLorry how long it takes to lorry get to ferry
      */
-    public Lorry(int maxCapacity, int tLorry, BufferedWriter writer){
+    public Lorry(int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
     LCount++;
     vNumber = LCount;
     start = System.nanoTime();
     this.writer = writer;
+    this.ferry = ferry;
     }
 
     /**
@@ -88,7 +91,6 @@ public class Lorry implements Runnable{
      * capacity is reached, lorries will wait for ferry to come back
      */
     public void fillFerry() {
-        Ferry ferry = Main.ferries.peek();
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
@@ -103,13 +105,13 @@ public class Lorry implements Runnable{
             long start2 = System.nanoTime();
 
             //last lorry to count
-            ferry.setInventory(1);
-            ferry.setSources(this.inventory);
+            ferry.sumInventory(1);
+            ferry.sumSources(this.inventory);
 
             //set value to default, and add trasfered sources
-            ferry.trasferedSources += ferry.getSources();
-            ferry.inventory = 0;
-            ferry.sources = 0;
+            ferry.setTrasferedSources(ferry.getSources());
+            ferry.setInventory(0);
+            ferry.setSources(0);
 
             //time to travel tLorry time
             try {
@@ -122,13 +124,13 @@ public class Lorry implements Runnable{
 
             //lorries are leaving
             for (int i = 0; i < ferry.getMaxCapacity(); i++) {
-                logLorryEnds(Main.getReadyLorrys().peek().vNumber, temp2, writer);
+                logLorryEnds(Main.getReadyLorrys().peek().getvNumber(), temp2, writer);
                 Main.getReadyLorrys().remove();
             }
 
         } else {
-            Main.ferries.peek().setInventory(1);
-            Main.ferries.peek().trasferedSources += Main.getReadyLorrys().peek().inventory;
+            ferry.sumInventory(1);
+            ferry.setTrasferedSources(Main.getReadyLorrys().peek().inventory);
         }
         semaphore.release();
     }
@@ -145,7 +147,7 @@ public class Lorry implements Runnable{
      * Getter of Lorry's instance inventory
      * @return inventory value (int)
      */
-    public int getInventory() {
+    public synchronized int getInventory() {
         return inventory;
     }
 
@@ -172,7 +174,7 @@ public class Lorry implements Runnable{
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static void writeToLogFile(String logMessage, BufferedWriter writer) {
+    private void writeToLogFile(String logMessage, BufferedWriter writer) {
         try  {
             writer.write(logMessage);
         } catch (IOException e) {
@@ -200,5 +202,13 @@ public class Lorry implements Runnable{
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d přijel na místo určení, trvalo mu to %d ms.\n", timeStamp, vNumber, time);
         writeToLogFile(logMessage, writer);
+    }
+
+    public int getvNumber() {
+        return vNumber;
+    }
+
+    public long getStart() {
+        return start;
     }
 }

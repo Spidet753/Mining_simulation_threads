@@ -74,7 +74,15 @@ public class Ferry implements Runnable{
      * Setter of ferry's instance inventory
      * @param inventory adds setted inventory to value saved in atributte
      */
-    public synchronized void setInventory(int inventory) {
+    public  void setInventory(int inventory) {
+        this.inventory = inventory;
+    }
+
+    /**
+     * Setter of ferry's instance inventory
+     * @param inventory adds setted inventory to value saved in atributte
+     */
+    public synchronized void sumInventory(int inventory) {
         this.inventory += inventory;
     }
 
@@ -89,7 +97,13 @@ public class Ferry implements Runnable{
     /**
      * Setter of sources on the ferry
      */
-    public synchronized void setSources(int sources) {
+    public void setSources(int sources) {
+        this.sources = sources;
+    }
+    /**
+     * adds sources to ferry
+     */
+    public synchronized void sumSources(int sources) {
         this.sources += sources;
     }
 
@@ -98,5 +112,9 @@ public class Ferry implements Runnable{
      */
     public int getTrasferedSources() {
         return trasferedSources;
+    }
+
+    public synchronized void setTrasferedSources(int trasferedSources) {
+        this.trasferedSources += trasferedSources;
     }
 }
