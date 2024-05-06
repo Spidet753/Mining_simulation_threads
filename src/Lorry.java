@@ -14,11 +14,11 @@ public class Lorry implements Runnable{
     /**
      * Time, how long is lorry driving
      */
-    private int tLorry;
+    private final int tLorry;
     /**
      * Maximum capacity of lorry
      */
-    private int maxCapacity;
+    private final int maxCapacity;
     /**
      * Capacity that is used right now
      */
@@ -40,15 +40,15 @@ public class Lorry implements Runnable{
     /**
      * Time when lorry instance was created
      */
-    private long start;
+    private final long start;
     /**
      * Semaphore used to route traffic
      */
-    private static Semaphore semaphore = new Semaphore(1);
+    private static final Semaphore semaphore = new Semaphore(1);
 
-    private BufferedWriter writer;
+    private final BufferedWriter writer;
 
-    private Ferry ferry;
+    private final Ferry ferry;
 
     /**
      * Constructor
@@ -100,7 +100,7 @@ public class Lorry implements Runnable{
         if (ferry.getInventory() == ferry.getMaxCapacity() - 1) {
             //log of departuring
             long end = System.nanoTime();
-            long temp = (end - ferry.start) / 1000000;
+            long temp = (end - ferry.getStart()) / 1000000;
             logFerryDeparture(temp, writer);
             long start2 = System.nanoTime();
 

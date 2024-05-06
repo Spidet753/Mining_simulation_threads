@@ -10,15 +10,15 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Main {
 
-    //== Public attributes
+    //== Public static attributes
     /**
      * Queue of empty lorries
      */
-    public static LinkedBlockingQueue<Lorry> emptyLorrys;
+    public volatile static LinkedBlockingQueue<Lorry> emptyLorrys;
     /**
      * Queue of full lorries
      */
-    public static LinkedBlockingQueue<Lorry> readyLorrys;
+    public volatile static LinkedBlockingQueue<Lorry> readyLorrys;
 
     /**
      * Main method of the program
@@ -31,11 +31,6 @@ public class Main {
         Worker[] workers;
         String inputFile;
         String outputFile;
-        int numberOfWorkers;
-        int timePerWorker;
-        int capacityOfLorry;
-        int timeOfLorry;
-        int capacityOfFerry;
 
         Options options = new Options();
 
@@ -69,6 +64,11 @@ public class Main {
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
+        int numberOfWorkers;
+        int timePerWorker;
+        int capacityOfLorry;
+        int timeOfLorry;
+        int capacityOfFerry;
 
         try {
             cmd = parser.parse(options, args);
@@ -111,7 +111,7 @@ public class Main {
 
         //Ferry instance
         Ferry ferry = new Ferry(capacityOfFerry);
-        ferry.start = System.nanoTime();
+        ferry.setStart(System.nanoTime());
         Thread ferryThread = new Thread(ferry);
         ferryThread.start();
 

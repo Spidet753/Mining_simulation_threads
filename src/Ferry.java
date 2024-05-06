@@ -10,25 +10,23 @@ public class Ferry implements Runnable{
     /**
      * Maximum capacity of ferry
      */
-    private int maxCapacity;
-
-    //== Public attributes
+    private final int maxCapacity;
     /**
      * Sources that are in the final position
      */
-    public volatile int trasferedSources = 0;
+    private volatile int trasferedSources = 0;
     /**
      * capacity of ferry right now
      */
-    public volatile int inventory = 0;
+    private volatile int inventory = 0;
     /**
      * Sources, that ferry is carrying right now
      */
-    public volatile int sources = 0;
+    private volatile int sources = 0;
     /**
      * Moment, when ferry is ready to fill
      */
-    public long start = 0;
+    private long start = 0;
 
     /**
      * Constructor
@@ -116,5 +114,13 @@ public class Ferry implements Runnable{
 
     public synchronized void setTrasferedSources(int trasferedSources) {
         this.trasferedSources += trasferedSources;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
     }
 }

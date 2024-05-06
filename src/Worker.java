@@ -33,10 +33,6 @@ public class Worker implements Runnable {
      */
     private static volatile int inventorySum = 0;
     /**
-     * Real time per source to mine
-     */
-    private int miningTime;
-    /**
      * Date format used with milliseconds used in the output file
      */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
@@ -47,15 +43,12 @@ public class Worker implements Runnable {
     /**
      * Semaphore used to route traffic with fair order
      */
-    private static Semaphore semaphore = new Semaphore(1, true);
-
-    private BufferedWriter writer;
-    private Foreman foreman;
-
-    private int lorryCapacity;
-    private int lorryTime;
-
-    private Ferry ferry;
+    private static final Semaphore semaphore = new Semaphore(1, true);
+    private final BufferedWriter writer;
+    private final Foreman foreman;
+    private final int lorryCapacity;
+    private final int lorryTime;
+    private final Ferry ferry;
     /**
      * Constructor
      * @param wNumber number of thread
@@ -103,7 +96,7 @@ public class Worker implements Runnable {
         int blockLength = block.length();
         for (int i = blockLength; i > 0; i--) {
             try {
-                miningTime = (int)(timePerX * Math.random());
+                int miningTime = (int) (timePerX * Math.random());
                 sleep(miningTime);
                 inventory += 1;
                 logMiningEvent(wNumber, miningTime, writer);

@@ -17,7 +17,7 @@ public class Foreman implements Runnable{
     /**
      * input file, that foreman has to go through
      */
-    private String file;
+    private final String file;
     /**
      * blocks, that foreman found in input file
      */
