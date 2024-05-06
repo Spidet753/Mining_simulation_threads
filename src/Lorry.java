@@ -31,8 +31,6 @@ public class Lorry implements Runnable{
      * Date format used with milliseconds used in the output file
      */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-
-    //== Public attributes
     /**
      * Number of the current instance
      */
