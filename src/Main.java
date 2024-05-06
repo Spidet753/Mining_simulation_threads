@@ -11,48 +11,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Main {
 
     //== Private attributes
-    /**
-     * Number of workers from input file
-     */
-    private static int numberOfWorkers;
-    /**
-     * time to mine a source from input file
-     */
-    private static int timePerWorker;
+
     /**
      * Max capacity of lorry from input file
      */
     private static int capacityOfLorry;
     /**
-     * Max capacity of ferry from input file
-     */
-    private static int capacityOfFerry;
-    /**
      * time to drive to ferry from input file
      */
     private static int timeOfLorry;
-    /**
-     * input file loaded from arguments
-     */
-    private static String inputFile;
-    /**
-     * output file set from arguments
-     */
-    private static String outputFile;
+
     /**
      * array of workers working in the simulation
      */
     private static Worker[] workers;
-    /**
-     * ThreadGroup of workers to know they ended their work
-     */
-    private static ThreadGroup workerThreadGroup;
 
     //== Public attributes
-    /**
-     * BufferedWriter for writing into output file
-     */
-    public static BufferedWriter writer;
     /**
      * Queue of empty lorries
      */
@@ -73,69 +47,14 @@ public class Main {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         //group to know if all the threads are dead or alive
-        workerThreadGroup = new ThreadGroup("workers");
-        loadInput(args);
-        writer = new BufferedWriter(new FileWriter(outputFile, false));
-
-        //creating a foreman thread that will go through the input file
-        Foreman foreman = new Foreman(inputFile);
-        Thread foremanThread = new Thread(foreman);
-        foremanThread.start();
-
-        //wait for foreman to search for blocks
-        try {
-            foremanThread.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        //Ferry instance
-        Ferry ferry = new Ferry(capacityOfFerry);
-        ferry.start = System.nanoTime();
-        ferries = new LinkedBlockingQueue<>();
-        ferries.add(ferry);
-        Thread ferryThread = new Thread(ferry);
-        ferryThread.start();
-
-        //creating worker Threads
-        workers = new Worker[numberOfWorkers];
-        for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker);
-            Thread workerThread = new Thread(workerThreadGroup, workers[i]);
-            workerThread.start();
-        }
-
-        //first lorry instance
-        emptyLorrys = new LinkedBlockingQueue<>();
-        readyLorrys = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry);
-        emptyLorrys.add(lorry);
-
-        //we don't want to end the Main thread until other threads are done
-        while (workerThreadGroup.activeCount() > 0) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        ferryThread.join();
-        //end of Main method, writing out important stats into console
-        writer.write("///////////////////////////////\n");
-        writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
-        for (int i = 0; i <workers.length; i++){
-            System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
-        }
-        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().getTrasferedSources()+ "\n");
-        writer.close();
-        System.out.println("Program has ended.");
-    }
-
-    /**
-     * Method which allows to run the Jar file in required state
-     * @param args arguments that are needed for the application to run
-     */
-    public static void loadInput(String[] args){
+        ThreadGroup workerThreadGroup = new ThreadGroup("workers");
+        String inputFile;
+        String outputFile;
+        int numberOfWorkers;
+        int timePerWorker;
+        int capacityOfLorry1;
+        int timeOfLorry1;
+        int capacityOfFerry;
 
         Options options = new Options();
 
@@ -176,24 +95,81 @@ public class Main {
             outputFile = cmd.getOptionValue("output");
             numberOfWorkers = Integer.parseInt(cmd.getOptionValue("cWorker"));
             timePerWorker = Integer.parseInt(cmd.getOptionValue("tWorker"));
-            capacityOfLorry = Integer.parseInt(cmd.getOptionValue("capLorry"));
-            timeOfLorry = Integer.parseInt(cmd.getOptionValue("tLorry"));
+            capacityOfLorry1 = Integer.parseInt(cmd.getOptionValue("capLorry"));
+            capacityOfLorry  = capacityOfLorry1;
+            timeOfLorry1 = Integer.parseInt(cmd.getOptionValue("tLorry"));
+            timeOfLorry = timeOfLorry1;
             capacityOfFerry = Integer.parseInt(cmd.getOptionValue("capFerry"));
             System.out.println(
-                             "---------------------------"+
-                             "\nvstupní soubor: " +inputFile+
-                             "\nvýstupní soubor: " + outputFile+
-                             "\npočet pracovníků: " +numberOfWorkers+
-                             "\nmaximální čas práce jednoho pracovníka: " + timePerWorker+ " ms" +
-                             "\nkapacita náklaďáku: " +capacityOfLorry+ " ks" +
-                             "\nmaximální čas jízdy náklaďáku: " + timeOfLorry+ " ms" +
-                             "\nkapacita přívozu: " + capacityOfFerry + " ks"
-                            );
+                    "---------------------------"+
+                            "\nvstupní soubor: " +inputFile+
+                            "\nvýstupní soubor: " + outputFile+
+                            "\npočet pracovníků: " +numberOfWorkers+
+                            "\nmaximální čas práce jednoho pracovníka: " + timePerWorker+ " ms" +
+                            "\nkapacita náklaďáku: " +capacityOfLorry+ " ks" +
+                            "\nmaximální čas jízdy náklaďáku: " + timeOfLorry+ " ms" +
+                            "\nkapacita přívozu: " + capacityOfFerry + " ks"
+            );
         } catch (ParseException e) {
             System.out.println("Wrong amount of arguments, program is ending.");
             System.exit(1);
             throw new RuntimeException(e);
         }
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, false));
+
+        //creating a foreman thread that will go through the input file
+        Foreman foreman = new Foreman(inputFile, writer);
+        Thread foremanThread = new Thread(foreman);
+        foremanThread.start();
+
+        //wait for foreman to search for blocks
+        try {
+            foremanThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        //Ferry instance
+        Ferry ferry = new Ferry(capacityOfFerry);
+        ferry.start = System.nanoTime();
+        ferries = new LinkedBlockingQueue<>();
+        ferries.add(ferry);
+        Thread ferryThread = new Thread(ferry);
+        ferryThread.start();
+
+        //creating worker Threads
+        workers = new Worker[numberOfWorkers];
+        for (int i = 0; i < workers.length; i++) {
+            workers[i] = new Worker((i+1), timePerWorker, writer);
+            Thread workerThread = new Thread(workerThreadGroup, workers[i]);
+            workerThread.start();
+        }
+
+        //first lorry instance
+        emptyLorrys = new LinkedBlockingQueue<>();
+        readyLorrys = new LinkedBlockingQueue<>();
+        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer);
+        emptyLorrys.add(lorry);
+
+        //we don't want to end the Main thread until other threads are done
+        while (workerThreadGroup.activeCount() > 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        ferryThread.join();
+        //end of Main method, writing out important stats into console
+        writer.write("///////////////////////////////\n");
+        writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
+        for (int i = 0; i <workers.length; i++){
+            System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
+        }
+        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferries.peek().getTrasferedSources()+ "\n");
+        writer.close();
+        System.out.println("Program is ending.");
     }
 
     /**
