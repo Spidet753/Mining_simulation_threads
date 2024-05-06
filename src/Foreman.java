@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,13 +30,19 @@ public class Foreman implements Runnable{
      * Date format used with milliseconds used in the output file
      */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
+    /**
+     * Writer used to output lines
+     */
+    private final BufferedWriter writer;
 
     /**
      * Constructor
      * @param file input file
      */
-    public Foreman(String file){
+    public Foreman(String file, BufferedWriter writer){
+
         this.file = file;
+        this.writer = writer;
     }
 
     /**
@@ -113,9 +120,9 @@ public class Foreman implements Runnable{
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static synchronized void writeToLogFile(String logMessage) {
+    private synchronized void writeToLogFile(String logMessage) {
         try  {
-            Main.writer.write(logMessage);
+            writer.write(logMessage);
         } catch (IOException e) {
             throw new RuntimeException("Chyba při zápisu do souboru.", e);
         }

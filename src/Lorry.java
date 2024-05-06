@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,17 +46,20 @@ public class Lorry implements Runnable{
      */
     static Semaphore semaphore = new Semaphore(1);
 
+    private BufferedWriter writer;
+
     /**
      * Constructor
      * @param maxCapacity maximum capacity of Lorry
      * @param tLorry how long it takes to lorry get to ferry
      */
-    public Lorry(int maxCapacity, int tLorry){
+    public Lorry(int maxCapacity, int tLorry, BufferedWriter writer){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
     LCount++;
     vNumber = LCount;
     start = System.nanoTime();
+    this.writer = writer;
     }
 
     /**
@@ -74,7 +78,7 @@ public class Lorry implements Runnable{
         //Lorry is at ferry
         long end = System.nanoTime();
         long time = (end - start) / 1000000;
-        logLorryArrival(vNumber, time);
+        logLorryArrival(vNumber, time, writer);
             fillFerry();
 
     }
@@ -84,27 +88,28 @@ public class Lorry implements Runnable{
      * capacity is reached, lorries will wait for ferry to come back
      */
     public void fillFerry() {
+        Ferry ferry = Main.ferries.peek();
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
          throw new RuntimeException(e);
         }
 
-        if (Main.ferries.peek().getInventory() == Main.ferries.peek().getMaxCapacity() - 1) {
+        if (ferry.getInventory() == ferry.getMaxCapacity() - 1) {
             //log of departuring
             long end = System.nanoTime();
-            long temp = (end - Main.ferries.peek().start) / 1000000;
-            logFerryDeparture(temp);
+            long temp = (end - ferry.start) / 1000000;
+            logFerryDeparture(temp, writer);
             long start2 = System.nanoTime();
 
             //last lorry to count
-            Main.ferries.peek().setInventory(1);
-            Main.ferries.peek().setSources(this.inventory);
+            ferry.setInventory(1);
+            ferry.setSources(this.inventory);
 
             //set value to default, and add trasfered sources
-            Main.ferries.peek().trasferedSources += Main.ferries.peek().getSources();
-            Main.ferries.peek().inventory = 0;
-            Main.ferries.peek().sources = 0;
+            ferry.trasferedSources += ferry.getSources();
+            ferry.inventory = 0;
+            ferry.sources = 0;
 
             //time to travel tLorry time
             try {
@@ -116,8 +121,8 @@ public class Lorry implements Runnable{
             long temp2 = (end2 - start2) / 1000000;
 
             //lorries are leaving
-            for (int i = 0; i < Main.ferries.peek().getMaxCapacity(); i++) {
-                logLorryEnds(Main.getReadyLorrys().peek().vNumber, temp2);
+            for (int i = 0; i < ferry.getMaxCapacity(); i++) {
+                logLorryEnds(Main.getReadyLorrys().peek().vNumber, temp2, writer);
                 Main.getReadyLorrys().remove();
             }
 
@@ -157,19 +162,19 @@ public class Lorry implements Runnable{
      * @param LorryNumber Thread number of lorry
      * @param time How long it took the lorry to arrive at ferry
      */
-    private void logLorryArrival(int LorryNumber, long time) {
+    private void logLorryArrival(int LorryNumber, long time, BufferedWriter writer) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d dojel k trajektu, trvalo mu to %d ms.\n", timeStamp, LorryNumber, time);
-        writeToLogFile(logMessage);
+        writeToLogFile(logMessage, writer);
     }
 
     /**
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private static void writeToLogFile(String logMessage) {
+    private static void writeToLogFile(String logMessage, BufferedWriter writer) {
         try  {
-            Main.writer.write(logMessage);
+            writer.write(logMessage);
         } catch (IOException e) {
             throw new RuntimeException("Chyba při zápisu do souboru.", e);
         }
@@ -179,11 +184,11 @@ public class Lorry implements Runnable{
      * Log of ferry departure
      * @param time How long it took lorries to fill ferry
      */
-    public void logFerryDeparture(long time){
+    public void logFerryDeparture(long time, BufferedWriter writer){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Trajekt odjíždí, trvalo ho naplnit %d ms.\n", timeStamp, time);
         System.out.println(timeStamp + " - Vyjíždí trajekt.\n");
-        writeToLogFile(logMessage);
+        writeToLogFile(logMessage, writer);
     }
 
     /**
@@ -191,9 +196,9 @@ public class Lorry implements Runnable{
      * @param vNumber (int) number of lorry
      * @param time (int) how long it took
      */
-    public void logLorryEnds(int vNumber, long time){
+    public void logLorryEnds(int vNumber, long time, BufferedWriter writer){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Náklaďák %d přijel na místo určení, trvalo mu to %d ms.\n", timeStamp, vNumber, time);
-        writeToLogFile(logMessage);
+        writeToLogFile(logMessage, writer);
     }
 }
