@@ -60,13 +60,13 @@ public class Lorry implements Runnable{
     this.writer = writer;
     this.ferry = ferry;
     //this.readyLorries = readyLorries;
+        start = System.nanoTime();
     }
 
     /**
      * Run method for threads
      */
     public void run(){
-        start = System.nanoTime();
 
         //lorry is driving
         try {
@@ -117,7 +117,8 @@ public class Lorry implements Runnable{
                 throw new RuntimeException(e);
             }
             long end2 = System.nanoTime();
-            long temp2 = (end2 - start2) / TO_MILLIS;
+            long temp2 = (end2 - start2) / 1000000;
+            System.out.println(temp2);
 
             //lorries are leaving
             for (int i = 0; i < ferry.getMaxCapacity(); i++) {
