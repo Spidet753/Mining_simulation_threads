@@ -11,7 +11,7 @@ import static java.lang.Thread.sleep;
  * @author Václav Prokop
  */
 public class Worker implements Runnable {
-
+    //==Constants
     private static final int TO_MILLIS = 1000000;
     //== Private attributes
     /**
@@ -31,17 +31,10 @@ public class Worker implements Runnable {
      */
     private int inventorySumOfMined = 0;
     /**
-     * How many sources all workers mined together
-     */
-    private static volatile int inventorySum = 0;
-    /**
      * Date format used with milliseconds used in the output file
      */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
-    /**
-     * Mined sources by workers
-     */
-    private static int sources = 0;
+
     /**
      * Semaphore used to route traffic with fair order
      */
@@ -73,7 +66,6 @@ public class Worker implements Runnable {
         while (!foreman.getBlocks().isEmpty()) {
             pickABlock();
         }
-        inventorySum += inventorySumOfMined;
     }
 
     /**
@@ -144,7 +136,7 @@ public class Worker implements Runnable {
                 throw new RuntimeException(e);
             }
             emptyLorries.peek().setInventory(1);
-            sources += 1;
+            foreman.setSourcesPicked(foreman.getSourcesPicked()-1);
             logPutting(wNumber, 1, writer);
 
             if (emptyLorries.peek().getInventory() >= emptyLorries.peek().getMaxCapacity()) {
@@ -157,17 +149,18 @@ public class Worker implements Runnable {
                 logFullEvent(emptyLorries.peek().getvNumber(), temp, writer);
 
                 //add it to readyLorrys
-                Main.getReadyLorrys().add(emptyLorries.peek());
+                //LinkedBlockingQueue<Lorry> readyLorries = new LinkedBlockingQueue();
+                Main.readyLorrys.add(emptyLorries.peek());
 
                 //and create new lorry to go
-                Lorry lorry = new Lorry(emptyLorries.peek().getMaxCapacity(), emptyLorries.peek().gettLorry(), writer, ferry);
+                Lorry lorry = new Lorry((emptyLorries.peek().getvNumber() + 1),emptyLorries.peek().getMaxCapacity(), emptyLorries.peek().gettLorry(), writer, ferry);
                 emptyLorries.add(lorry);
                 Thread lorryThread = new Thread(emptyLorries.peek());
                 lorryThread.start();
                 emptyLorries.remove();
             }
 
-            if (sources >= Foreman.getCountOfsource() && emptyLorries.peek().getInventory() != 0) {
+            if (foreman.getSourcesPicked() == 0 && emptyLorries.peek().getInventory() != 0) {
                 //miners mined all sources, time to send last lorry
                 //time to leave
                 long end = System.nanoTime();
@@ -266,13 +259,5 @@ public class Worker implements Runnable {
      */
     public int getInventorySumOfMined() {
         return inventorySumOfMined;
-    }
-
-    /**
-     * Getter of all mined sources by all workers
-     * @return (int) mined sources
-     */
-    public static int getInventorySum() {
-        return inventorySum;
     }
 }

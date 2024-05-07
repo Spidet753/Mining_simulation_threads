@@ -13,10 +13,6 @@ public class Main {
 
     //== Public static attributes
     /**
-     * Queue of empty lorries
-     */
-    public volatile static LinkedBlockingQueue<Lorry> emptyLorrys;
-    /**
      * Queue of full lorries
      */
     public volatile static LinkedBlockingQueue<Lorry> readyLorrys;
@@ -111,25 +107,23 @@ public class Main {
         }
 
         //Ferry instance
-        Ferry ferry = new Ferry(capacityOfFerry);
+        Ferry ferry = new Ferry(capacityOfFerry, foreman);
         ferry.setStart(System.nanoTime());
         Thread ferryThread = new Thread(ferry);
         ferryThread.start();
 
         //first lorry instance
-        LinkedBlockingQueue<Lorry> emptyLorries2 = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Lorry> emptyLorries = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Lorry> readyLorries2 = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer, ferry);
-        emptyLorrys = new LinkedBlockingQueue<>();
+        Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry);
         readyLorrys = new LinkedBlockingQueue<>();
-        emptyLorrys.add(lorry);
-        emptyLorries2.add(lorry);
+        emptyLorries.add(lorry);
 
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
         Semaphore workerSemaphore = new Semaphore(1, true);
         for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, ferry, workerSemaphore, emptyLorries2);
+            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, ferry, workerSemaphore, emptyLorries);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
@@ -145,21 +139,13 @@ public class Main {
         ferryThread.join();
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
-        writer.write("\nPočet vytěžených zdrojů: " + Worker.getInventorySum()+".\n");
+        writer.write("\nPočet vytěžených zdrojů: " + foreman.getBlocks() +".\n");
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }
         System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferry.getTrasferedSources()+ "\n");
         writer.close();
         System.out.println("Program is ending.");
-    }
-
-    /**
-     * Getter of lorrys, that are not full
-     * @return LinkedBlockingQueue (for consistency)
-     */
-    public static LinkedBlockingQueue<Lorry> getEmptyLorrys() {
-        return emptyLorrys;
     }
 
     /**

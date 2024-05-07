@@ -2,6 +2,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import static java.lang.Thread.sleep;
 
@@ -10,6 +11,8 @@ import static java.lang.Thread.sleep;
  * @author Václav Prokop
  */
 public class Lorry implements Runnable{
+    //==Constants
+    private static final int TO_MILLIS = 1000000;
     //== Private attributes
     /**
      * Time, how long is lorry driving
@@ -24,10 +27,6 @@ public class Lorry implements Runnable{
      */
     private volatile int inventory = 0;
     /**
-     * Number of created instances
-     */
-    private static int LCount = 0;
-    /**
      * Date format used with milliseconds used in the output file
      */
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
@@ -38,7 +37,7 @@ public class Lorry implements Runnable{
     /**
      * Time when lorry instance was created
      */
-    private final long start;
+    private long start;
     /**
      * Semaphore used to route traffic
      */
@@ -47,27 +46,27 @@ public class Lorry implements Runnable{
     private final BufferedWriter writer;
 
     private final Ferry ferry;
+    //private final LinkedBlockingQueue<Lorry> readyLorries;
 
     /**
      * Constructor
      * @param maxCapacity maximum capacity of Lorry
      * @param tLorry how long it takes to lorry get to ferry
      */
-    public Lorry(int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry){
+    public Lorry(int vNumber, int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
-    LCount++;
-    vNumber = LCount;
-    start = System.nanoTime();
+    this.vNumber = vNumber;
     this.writer = writer;
     this.ferry = ferry;
+    //this.readyLorries = readyLorries;
     }
 
     /**
      * Run method for threads
      */
     public void run(){
-        long start = System.nanoTime();
+        start = System.nanoTime();
 
         //lorry is driving
         try {
@@ -78,7 +77,7 @@ public class Lorry implements Runnable{
 
         //Lorry is at ferry
         long end = System.nanoTime();
-        long time = (end - start) / 1000000;
+        long time = (end - start) / TO_MILLIS;
         logLorryArrival(vNumber, time, writer);
             fillFerry();
 
@@ -98,7 +97,7 @@ public class Lorry implements Runnable{
         if (ferry.getInventory() == ferry.getMaxCapacity() - 1) {
             //log of departuring
             long end = System.nanoTime();
-            long temp = (end - ferry.getStart()) / 1000000;
+            long temp = (end - ferry.getStart()) / TO_MILLIS;
             logFerryDeparture(temp, writer);
             long start2 = System.nanoTime();
 
@@ -118,7 +117,7 @@ public class Lorry implements Runnable{
                 throw new RuntimeException(e);
             }
             long end2 = System.nanoTime();
-            long temp2 = (end2 - start2) / 1000000;
+            long temp2 = (end2 - start2) / TO_MILLIS;
 
             //lorries are leaving
             for (int i = 0; i < ferry.getMaxCapacity(); i++) {

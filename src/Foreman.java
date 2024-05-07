@@ -12,6 +12,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Václav Prokop
  */
 public class Foreman implements Runnable{
+    //==Constants
+    private final int TO_MILLIS = 1000000;
 
     //== Private attributes
     /**
@@ -25,7 +27,9 @@ public class Foreman implements Runnable{
     /**
      * all sources, that foreman found
      */
-    private static int countOfsource = 0;
+    private int countOfsource = 0;
+
+    private volatile int sourcesPicked;
     /**
      * Date format used with milliseconds used in the output file
      */
@@ -65,10 +69,10 @@ public class Foreman implements Runnable{
             }
             //log found sources and blocks, and time how long it took
             long end = System.nanoTime();
-            long time = (end - start) / 1000000;
+            long time = (end - start) / TO_MILLIS;
             logFoundSources(time);
             logFoundblocks(time);
-
+            sourcesPicked = countOfsource;
             System.out.println("předák našel: " + (blocks.size()) + " bloků" +
                                "\npředák našel: " + (countOfsource) + " zdrojů" +
                                "\n---------------------------" +
@@ -84,7 +88,7 @@ public class Foreman implements Runnable{
      * Method that returns all found sources by foreman
      * @return (int) sum of sources
      */
-    public static int getCountOfsource() {
+    public int getCountOfsource() {
         return countOfsource;
     }
 
@@ -126,5 +130,13 @@ public class Foreman implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException("Chyba při zápisu do souboru.", e);
         }
+    }
+
+    public int getSourcesPicked() {
+        return sourcesPicked;
+    }
+
+    public void setSourcesPicked(int sourcesPicked) {
+        this.sourcesPicked = sourcesPicked;
     }
 }

@@ -27,20 +27,22 @@ public class Ferry implements Runnable{
      * Moment, when ferry is ready to fill
      */
     private long start = 0;
+    private final Foreman foreman;
 
     /**
      * Constructor
      * @param maxCapacity maximum capacity of Ferry
      */
-    public Ferry(int maxCapacity){
+    public Ferry(int maxCapacity, Foreman foreman){
         this.maxCapacity = maxCapacity;
+        this.foreman = foreman;
     }
 
     /**
      * Run method for threads
      */
     public void run(){
-        while(trasferedSources >= Foreman.getCountOfsource()){
+        while(trasferedSources >= foreman.getCountOfsource()){
             while(inventory != maxCapacity){
                 try {
                     sleep(0);
