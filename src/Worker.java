@@ -43,7 +43,7 @@ public class Worker implements Runnable {
     /**
      * Semaphore used to route traffic with fair order
      */
-    private static final Semaphore semaphore = new Semaphore(1, true);
+    private final Semaphore semaphore;
     private final BufferedWriter writer;
     private final Foreman foreman;
     private final int lorryCapacity;
@@ -54,7 +54,7 @@ public class Worker implements Runnable {
      * @param wNumber number of thread
      * @param timePerX how long it takes to mine a source
      */
-    public Worker(int wNumber, int timePerX, BufferedWriter writer, Foreman foreman, int lorryCapacity, int lorryTime, Ferry ferry) {
+    public Worker(int wNumber, int timePerX, BufferedWriter writer, Foreman foreman, int lorryCapacity, int lorryTime, Ferry ferry, Semaphore semaphore) {
         this.wNumber = wNumber;
         this.timePerX = timePerX;
         this.writer = writer;
@@ -62,6 +62,7 @@ public class Worker implements Runnable {
         this.lorryCapacity = lorryCapacity;
         this.lorryTime = lorryTime;
         this.ferry = ferry;
+        this.semaphore = semaphore;
     }
 
     /**

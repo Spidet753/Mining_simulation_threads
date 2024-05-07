@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 /**
  * Main class
@@ -117,8 +118,9 @@ public class Main {
 
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
+        Semaphore workerSemaphore = new Semaphore(1, true);
         for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, capacityOfLorry, timeOfLorry, ferry);
+            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, capacityOfLorry, timeOfLorry, ferry, workerSemaphore);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
