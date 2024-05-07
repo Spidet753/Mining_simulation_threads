@@ -209,4 +209,8 @@ public class Lorry implements Runnable{
     public long getStart() {
         return start;
     }
+
+    public int gettLorry() {
+        return tLorry;
+    }
 }

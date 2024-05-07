@@ -116,20 +116,23 @@ public class Main {
         Thread ferryThread = new Thread(ferry);
         ferryThread.start();
 
+        //first lorry instance
+        LinkedBlockingQueue<Lorry> emptyLorries2 = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Lorry> readyLorries2 = new LinkedBlockingQueue<>();
+        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer, ferry);
+        emptyLorrys = new LinkedBlockingQueue<>();
+        readyLorrys = new LinkedBlockingQueue<>();
+        emptyLorrys.add(lorry);
+        emptyLorries2.add(lorry);
+
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
         Semaphore workerSemaphore = new Semaphore(1, true);
         for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, capacityOfLorry, timeOfLorry, ferry, workerSemaphore);
+            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, ferry, workerSemaphore, emptyLorries2);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
-
-        //first lorry instance
-        emptyLorrys = new LinkedBlockingQueue<>();
-        readyLorrys = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(capacityOfLorry, timeOfLorry, writer, ferry);
-        emptyLorrys.add(lorry);
 
         //we don't want to end the Main thread until other threads are done
         while (workerThreadGroup.activeCount() > 0) {
