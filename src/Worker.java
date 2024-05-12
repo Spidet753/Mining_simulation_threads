@@ -173,6 +173,7 @@ public class Worker implements Runnable {
 
                 //log it
                 logFullEvent(emptyLorries.peek().getvNumber(), temp, writer);
+                emptyLorries.remove();
             }
             semaphore.release();
     }
