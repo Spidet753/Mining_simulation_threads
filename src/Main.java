@@ -10,13 +10,6 @@ import java.util.concurrent.Semaphore;
  * @author Václav Prokop
  */
 public class Main {
-
-    //== Public static attributes
-    /**
-     * Queue of full lorries
-     */
-    public volatile static LinkedBlockingQueue<Lorry> readyLorrys;
-
     /**
      * Main method of the program
      * @param args arguments that are needed for the application to run
@@ -113,17 +106,17 @@ public class Main {
         ferryThread.start();
 
         //first lorry instance
+        Semaphore lorrySemaphore = new Semaphore(1);
         LinkedBlockingQueue<Lorry> emptyLorries = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<Lorry> readyLorries2 = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry);
-        readyLorrys = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Lorry> readyLorries = new LinkedBlockingQueue<>();
+        Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry, readyLorries, lorrySemaphore);
         emptyLorries.add(lorry);
 
         //creating worker Threads
         workers = new Worker[numberOfWorkers];
         Semaphore workerSemaphore = new Semaphore(1, true);
         for (int i = 0; i < workers.length; i++) {
-            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, ferry, workerSemaphore, emptyLorries);
+            workers[i] = new Worker((i+1), timePerWorker, writer, foreman, ferry, workerSemaphore, emptyLorries, readyLorries);
             Thread workerThread = new Thread(workerThreadGroup, workers[i]);
             workerThread.start();
         }
@@ -137,6 +130,7 @@ public class Main {
             }
         }
         ferryThread.join();
+
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
         writer.write("\nPočet vytěžených zdrojů: " + foreman.getBlocks() +".\n");
@@ -146,13 +140,5 @@ public class Main {
         System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferry.getTrasferedSources()+ "\n");
         writer.close();
         System.out.println("Program is ending.");
-    }
-
-    /**
-     * Getter of lorrys, that are full and ready to go
-     * @return LinkedBlockingQueue (for consistency)
-     */
-    public static LinkedBlockingQueue<Lorry> getReadyLorrys() {
-        return readyLorrys;
     }
 }

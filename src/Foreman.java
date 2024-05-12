@@ -13,6 +13,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Foreman implements Runnable{
     //==Constants
+    /**
+     * Casts nanoseconds into milliseconds
+     */
     private final int TO_MILLIS = 1000000;
 
     //== Private attributes
@@ -42,6 +45,7 @@ public class Foreman implements Runnable{
     /**
      * Constructor
      * @param file input file
+     * @param writer to outprint into file
      */
     public Foreman(String file, BufferedWriter writer){
 
@@ -132,10 +136,18 @@ public class Foreman implements Runnable{
         }
     }
 
+    /**
+     * Getter of found sources - sources already picked by workers
+     * @return int number of sources
+     */
     public int getSourcesPicked() {
         return sourcesPicked;
     }
 
+    /**
+     * Seeter of picked sources
+     * @param sourcesPicked int number of sources
+     */
     public void setSourcesPicked(int sourcesPicked) {
         this.sourcesPicked = sourcesPicked;
     }

@@ -12,6 +12,9 @@ import static java.lang.Thread.sleep;
  */
 public class Lorry implements Runnable{
     //==Constants
+    /**
+     * Casts nanoseconds into milliseconds
+     */
     private static final int TO_MILLIS = 1000000;
     //== Private attributes
     /**
@@ -41,26 +44,40 @@ public class Lorry implements Runnable{
     /**
      * Semaphore used to route traffic
      */
-    private static final Semaphore semaphore = new Semaphore(1);
-
+    private final Semaphore semaphore;
+    /**
+     * Writer used to print text into file
+     */
     private final BufferedWriter writer;
-
+    /**
+     * instance of ferry in which lorry is putting its inventory
+     */
     private final Ferry ferry;
-    //private final LinkedBlockingQueue<Lorry> readyLorries;
+    /**
+     * list of ready lorries
+     */
+    private final LinkedBlockingQueue<Lorry> readyLorries;
 
     /**
      * Constructor
+     * @param vNumber number of thread
      * @param maxCapacity maximum capacity of Lorry
      * @param tLorry how long it takes to lorry get to ferry
+     * @param writer to print outputs into file
+     * @param ferry where to put lorry's inventory
+     * @param readyLorries list of filled lorries
+     * @param semaphore semaphore for synchronization
      */
-    public Lorry(int vNumber, int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry){
+    public Lorry(int vNumber, int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry,
+                 LinkedBlockingQueue<Lorry> readyLorries, Semaphore semaphore){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
     this.vNumber = vNumber;
     this.writer = writer;
     this.ferry = ferry;
-    //this.readyLorries = readyLorries;
-        start = System.nanoTime();
+    this.readyLorries = readyLorries;
+    this.semaphore = semaphore;
+    start = System.nanoTime();
     }
 
     /**
@@ -118,17 +135,16 @@ public class Lorry implements Runnable{
             }
             long end2 = System.nanoTime();
             long temp2 = (end2 - start2) / 1000000;
-            System.out.println(temp2);
 
             //lorries are leaving
             for (int i = 0; i < ferry.getMaxCapacity(); i++) {
-                logLorryEnds(Main.getReadyLorrys().peek().getvNumber(), temp2, writer);
-                Main.getReadyLorrys().remove();
+                logLorryEnds(readyLorries.peek().getvNumber(), temp2, writer);
+                readyLorries.remove();
             }
 
         } else {
             ferry.sumInventory(1);
-            ferry.setTrasferedSources(Main.getReadyLorrys().peek().inventory);
+            ferry.setTrasferedSources(readyLorries.peek().inventory);
         }
         semaphore.release();
     }
@@ -202,14 +218,24 @@ public class Lorry implements Runnable{
         writeToLogFile(logMessage, writer);
     }
 
+    /**
+     * Getter of Thread number
+     * @return int vNumber
+     */
     public int getvNumber() {
         return vNumber;
     }
 
-    public long getStart() {
-        return start;
-    }
+    /**
+     * Getter of the time, when this instance was created
+     * @return long start
+     */
+    public long getStart() { return start; }
 
+    /**
+     * Getter of tLorry - time to travel
+     * @return int tLorry
+     */
     public int gettLorry() {
         return tLorry;
     }

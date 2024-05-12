@@ -27,11 +27,15 @@ public class Ferry implements Runnable{
      * Moment, when ferry is ready to fill
      */
     private long start = 0;
+    /**
+     * instance of foreman to know about right amount of sources to be transferred
+     */
     private final Foreman foreman;
 
     /**
      * Constructor
      * @param maxCapacity maximum capacity of Ferry
+     * @param foreman instance of foreman
      */
     public Ferry(int maxCapacity, Foreman foreman){
         this.maxCapacity = maxCapacity;
@@ -74,7 +78,7 @@ public class Ferry implements Runnable{
      * Setter of ferry's instance inventory
      * @param inventory adds setted inventory to value saved in atributte
      */
-    public  void setInventory(int inventory) {
+    public void setInventory(int inventory) {
         this.inventory = inventory;
     }
 
@@ -114,14 +118,26 @@ public class Ferry implements Runnable{
         return trasferedSources;
     }
 
+    /**
+     * Setter of transfered sources
+     * @param trasferedSources int tranfered sources
+     */
     public synchronized void setTrasferedSources(int trasferedSources) {
         this.trasferedSources += trasferedSources;
     }
 
+    /**
+     * Getter of time, when ferry is ready to go
+     * @return long start
+     */
     public long getStart() {
         return start;
     }
 
+    /**
+     * Setter of time, when ferry is ready to go
+     * @return long start
+     */
     public void setStart(long start) {
         this.start = start;
     }

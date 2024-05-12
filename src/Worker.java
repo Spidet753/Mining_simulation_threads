@@ -11,7 +11,10 @@ import static java.lang.Thread.sleep;
  * @author Václav Prokop
  */
 public class Worker implements Runnable {
-    //==Constants
+    //==Private Constants
+    /**
+     * Casts nanoseconds into milliseconds
+     */
     private static final int TO_MILLIS = 1000000;
     //== Private attributes
     /**
@@ -39,16 +42,40 @@ public class Worker implements Runnable {
      * Semaphore used to route traffic with fair order
      */
     private final Semaphore semaphore;
+    /**
+     * Writer used to print text into file
+     */
     private final BufferedWriter writer;
+    /**
+     * Instance of foreman, to pick blocks from
+     */
     private final Foreman foreman;
+    /**
+     * ferry instance given to lorries
+     */
     private final Ferry ferry;
+    /**
+     * List of empty lorries
+     */
     private final LinkedBlockingQueue<Lorry> emptyLorries;
+    /**
+     * List of ready lorries
+     */
+    private final LinkedBlockingQueue<Lorry> readyLorries;
+
     /**
      * Constructor
      * @param wNumber number of thread
      * @param timePerX how long it takes to mine a source
+     * @param writer for outputing to a file
+     * @param foreman gives workers blocks to work with
+     * @param ferry given to a lorry instance
+     * @param semaphore semaphore with fair order
+     * @param emptyLorries list of empty lorries
+     * @param readyLorries list of ready lorries
      */
-    public Worker(int wNumber, int timePerX, BufferedWriter writer, Foreman foreman, Ferry ferry, Semaphore semaphore, LinkedBlockingQueue<Lorry> emptyLorries) {
+    public Worker(int wNumber, int timePerX, BufferedWriter writer, Foreman foreman, Ferry ferry, Semaphore semaphore,
+                  LinkedBlockingQueue<Lorry> emptyLorries, LinkedBlockingQueue<Lorry> readyLorries) {
         this.wNumber = wNumber;
         this.timePerX = timePerX;
         this.writer = writer;
@@ -56,6 +83,7 @@ public class Worker implements Runnable {
         this.ferry = ferry;
         this.semaphore = semaphore;
         this.emptyLorries = emptyLorries;
+        this.readyLorries = readyLorries;
     }
 
     /**
@@ -69,7 +97,7 @@ public class Worker implements Runnable {
     }
 
     /**
-     * Method that gives a worker specific block to work with
+     * Method that gives a worker a specific block to work with
      */
     public void pickABlock() {
         if (!foreman.getBlocks().isEmpty()) {
@@ -149,11 +177,11 @@ public class Worker implements Runnable {
                 logFullEvent(emptyLorries.peek().getvNumber(), temp, writer);
 
                 //add it to readyLorrys
-                //LinkedBlockingQueue<Lorry> readyLorries = new LinkedBlockingQueue();
-                Main.readyLorrys.add(emptyLorries.peek());
+                readyLorries.add(emptyLorries.peek());
 
                 //and create new lorry to go
-                Lorry lorry = new Lorry((emptyLorries.peek().getvNumber() + 1),emptyLorries.peek().getMaxCapacity(), emptyLorries.peek().gettLorry(), writer, ferry);
+                Lorry lorry = new Lorry((emptyLorries.peek().getvNumber() + 1),emptyLorries.peek().getMaxCapacity(),
+                                                      emptyLorries.peek().gettLorry(), writer, ferry, readyLorries, semaphore);
                 emptyLorries.add(lorry);
                 Thread lorryThread = new Thread(emptyLorries.peek());
                 lorryThread.start();
@@ -169,7 +197,7 @@ public class Worker implements Runnable {
                 //add it to readyLorrys
                 Thread lorryThread = new Thread(emptyLorries.peek());
                 lorryThread.start();
-                Main.getReadyLorrys().add(emptyLorries.peek());
+                readyLorries.add(emptyLorries.peek());
 
                 //log it
                 logFullEvent(emptyLorries.peek().getvNumber(), temp, writer);
