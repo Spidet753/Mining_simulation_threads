@@ -100,12 +100,15 @@ public class Lorry implements Runnable{
         logLorryArrival(vNumber, time, writer);
             fillFerry();
 
-        //Barrier to wait for other lorries to fill ferry
         try {
+            //Barrier to wait for other lorries to fill ferry
             barrier.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (BrokenBarrierException e) {
+            //lorries are leaving to the end
+            long start2 = System.nanoTime();
+            sleep((int)(tLorry*Math.random()));
+            long time2 = (System.nanoTime() - start2) / TO_MILLIS;
+            logLorryEnds(vNumber, time2, writer);
+        } catch (InterruptedException | BrokenBarrierException e) {
             throw new RuntimeException(e);
         }
     }
@@ -120,7 +123,6 @@ public class Lorry implements Runnable{
             long end = System.nanoTime();
             long temp = (end - ferry.getStart()) / TO_MILLIS;
             logFerryDeparture(temp, writer);
-            long start2 = System.nanoTime();
 
             //last lorry to count
             ferry.sumInventory(1);
@@ -131,18 +133,8 @@ public class Lorry implements Runnable{
             ferry.setInventory(0);
             ferry.setSources(0);
 
-            //time to travel tLorry time
-            try {
-                sleep((int)(tLorry*Math.random()));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            long end2 = System.nanoTime();
-            long temp2 = (end2 - start2) / 1000000;
-
-            //lorries are leaving
+            //lorries are empty
             for (int i = 0; i < ferry.getMaxCapacity(); i++) {
-                logLorryEnds(readyLorries.peek().getvNumber(), temp2, writer);
                 readyLorries.remove();
             }
 
@@ -243,7 +235,12 @@ public class Lorry implements Runnable{
         return tLorry;
     }
 
+    /**
+     * Getter of barrier for lorries to go to the end
+     * @return CyclicBarrier barrier
+     */
     public CyclicBarrier getBarrier() {
         return barrier;
     }
 }
+

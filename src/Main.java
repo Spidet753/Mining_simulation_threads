@@ -108,7 +108,6 @@ public class Main {
 
         //first lorry instance
         CyclicBarrier lorryBarrier = new CyclicBarrier(capacityOfFerry);
-        Semaphore lorrySemaphore = new Semaphore(1);
         LinkedBlockingQueue<Lorry> emptyLorries = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Lorry> readyLorries = new LinkedBlockingQueue<>();
         Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry, readyLorries, lorryBarrier);
@@ -135,7 +134,7 @@ public class Main {
 
         //end of Main method, writing out important stats into console
         writer.write("///////////////////////////////\n");
-        writer.write("\nPočet vytěžených zdrojů: " + foreman.getBlocks() +".\n");
+        writer.write("\nPočet vytěžených zdrojů: " + foreman.getCountOfsource() +".\n");
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }
