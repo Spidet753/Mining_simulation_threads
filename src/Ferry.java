@@ -14,7 +14,7 @@ public class Ferry implements Runnable{
     /**
      * Sources that are in the final position
      */
-    private volatile int trasferedSources = 0;
+    private volatile int trasferredSources = 0;
     /**
      * capacity of ferry right now
      */
@@ -46,7 +46,7 @@ public class Ferry implements Runnable{
      * Run method for threads
      */
     public void run(){
-        while(trasferedSources >= foreman.getCountOfsource()){
+        while(trasferredSources >= foreman.getCountOfsource()){
             while(inventory != maxCapacity){
                 try {
                     sleep(0);
@@ -114,16 +114,16 @@ public class Ferry implements Runnable{
     /**
      * Getter of sources that are in the final position
      */
-    public int getTrasferedSources() {
-        return trasferedSources;
+    public int getTrasferredSources() {
+        return trasferredSources;
     }
 
     /**
      * Setter of transfered sources
-     * @param trasferedSources int tranfered sources
+     * @param trasferredSources int tranfered sources
      */
-    public synchronized void setTrasferedSources(int trasferedSources) {
-        this.trasferedSources += trasferedSources;
+    public synchronized void setTrasferredSources(int trasferredSources) {
+        this.trasferredSources += trasferredSources;
     }
 
     /**

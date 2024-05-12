@@ -2,6 +2,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import static java.lang.Thread.sleep;
@@ -42,9 +44,9 @@ public class Lorry implements Runnable{
      */
     private long start;
     /**
-     * Semaphore used to route traffic
+     * Barrier to make threads to wait for each other
      */
-    private final Semaphore semaphore;
+    private final CyclicBarrier barrier;
     /**
      * Writer used to print text into file
      */
@@ -66,17 +68,17 @@ public class Lorry implements Runnable{
      * @param writer to print outputs into file
      * @param ferry where to put lorry's inventory
      * @param readyLorries list of filled lorries
-     * @param semaphore semaphore for synchronization
+     * @param barrier barrier for synchronization
      */
     public Lorry(int vNumber, int maxCapacity, int tLorry, BufferedWriter writer, Ferry ferry,
-                 LinkedBlockingQueue<Lorry> readyLorries, Semaphore semaphore){
+                 LinkedBlockingQueue<Lorry> readyLorries, CyclicBarrier barrier){
     this.maxCapacity = maxCapacity;
     this.tLorry = tLorry;
     this.vNumber = vNumber;
     this.writer = writer;
     this.ferry = ferry;
     this.readyLorries = readyLorries;
-    this.semaphore = semaphore;
+    this.barrier = barrier;
     start = System.nanoTime();
     }
 
@@ -98,6 +100,14 @@ public class Lorry implements Runnable{
         logLorryArrival(vNumber, time, writer);
             fillFerry();
 
+        //Barrier to wait for other lorries to fill ferry
+        try {
+            barrier.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (BrokenBarrierException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -105,12 +115,6 @@ public class Lorry implements Runnable{
      * capacity is reached, lorries will wait for ferry to come back
      */
     public void fillFerry() {
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-         throw new RuntimeException(e);
-        }
-
         if (ferry.getInventory() == ferry.getMaxCapacity() - 1) {
             //log of departuring
             long end = System.nanoTime();
@@ -123,7 +127,7 @@ public class Lorry implements Runnable{
             ferry.sumSources(this.inventory);
 
             //set value to default, and add trasfered sources
-            ferry.setTrasferedSources(ferry.getSources());
+            ferry.setTrasferredSources(ferry.getSources());
             ferry.setInventory(0);
             ferry.setSources(0);
 
@@ -144,9 +148,8 @@ public class Lorry implements Runnable{
 
         } else {
             ferry.sumInventory(1);
-            ferry.setTrasferedSources(readyLorries.peek().inventory);
+            ferry.setTrasferredSources(readyLorries.peek().inventory);
         }
-        semaphore.release();
     }
 
     /**
@@ -238,5 +241,9 @@ public class Lorry implements Runnable{
      */
     public int gettLorry() {
         return tLorry;
+    }
+
+    public CyclicBarrier getBarrier() {
+        return barrier;
     }
 }

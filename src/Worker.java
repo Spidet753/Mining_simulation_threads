@@ -181,7 +181,7 @@ public class Worker implements Runnable {
 
                 //and create new lorry to go
                 Lorry lorry = new Lorry((emptyLorries.peek().getvNumber() + 1),emptyLorries.peek().getMaxCapacity(),
-                                                      emptyLorries.peek().gettLorry(), writer, ferry, readyLorries, semaphore);
+                                                      emptyLorries.peek().gettLorry(), writer, ferry, readyLorries, emptyLorries.peek().getBarrier());
                 emptyLorries.add(lorry);
                 Thread lorryThread = new Thread(emptyLorries.peek());
                 lorryThread.start();

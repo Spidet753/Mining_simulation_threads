@@ -2,6 +2,7 @@ import org.apache.commons.cli.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
@@ -106,10 +107,11 @@ public class Main {
         ferryThread.start();
 
         //first lorry instance
+        CyclicBarrier lorryBarrier = new CyclicBarrier(capacityOfFerry);
         Semaphore lorrySemaphore = new Semaphore(1);
         LinkedBlockingQueue<Lorry> emptyLorries = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Lorry> readyLorries = new LinkedBlockingQueue<>();
-        Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry, readyLorries, lorrySemaphore);
+        Lorry lorry = new Lorry(1, capacityOfLorry, timeOfLorry, writer, ferry, readyLorries, lorryBarrier);
         emptyLorries.add(lorry);
 
         //creating worker Threads
@@ -137,7 +139,7 @@ public class Main {
         for (int i = 0; i <workers.length; i++){
             System.out.println("Dělník " + workers[i].getwNumber() +" vytěžil "+ workers[i].getInventorySumOfMined() + " zdrojů.\n");
         }
-        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferry.getTrasferedSources()+ "\n");
+        System.out.println("Celkový počet zdrojů dovezených do cíle: " + ferry.getTrasferredSources()+ "\n");
         writer.close();
         System.out.println("Program is ending.");
     }
