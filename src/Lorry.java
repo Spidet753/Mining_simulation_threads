@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 import static java.lang.Thread.sleep;
 
 /**
