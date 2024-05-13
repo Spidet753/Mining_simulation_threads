@@ -86,7 +86,7 @@ public class Lorry implements Runnable{
      * Run method for threads
      */
     public void run(){
-
+        long start = System.nanoTime();
         //lorry is driving
         try {
             sleep((int)(tLorry*Math.random()));
@@ -95,8 +95,7 @@ public class Lorry implements Runnable{
         }
 
         //Lorry is at ferry
-        long end = System.nanoTime();
-        long time = (end - start) / TO_MILLIS;
+        long time = (System.nanoTime() - start) / TO_MILLIS;
         logLorryArrival(vNumber, time, writer);
             fillFerry();
 
@@ -119,14 +118,14 @@ public class Lorry implements Runnable{
      */
     public void fillFerry() {
         if (ferry.getInventory() == ferry.getMaxCapacity() - 1) {
-            //log of departuring
-            long end = System.nanoTime();
-            long temp = (end - ferry.getStart()) / TO_MILLIS;
-            logFerryDeparture(temp, writer);
-
             //last lorry to count
             ferry.sumInventory(1);
             ferry.sumSources(this.inventory);
+
+            //log of departuring
+            long end = System.nanoTime();
+            long temp = (end - ferry.getStart()) / TO_MILLIS;
+            logFerryDeparture(temp, writer, ferry);
 
             //set value to default, and add trasfered sources
             ferry.setTrasferredSources(ferry.getSources());
@@ -195,10 +194,11 @@ public class Lorry implements Runnable{
      * Log of ferry departure
      * @param time How long it took lorries to fill ferry
      */
-    public void logFerryDeparture(long time, BufferedWriter writer){
+    public void logFerryDeparture(long time, BufferedWriter writer, Ferry ferry){
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Trajekt odjíždí, trvalo ho naplnit %d ms.\n", timeStamp, time);
         System.out.println(timeStamp + " - Vyjíždí trajekt.\n");
+        ferry.setStart(System.nanoTime());
         writeToLogFile(logMessage, writer);
     }
 

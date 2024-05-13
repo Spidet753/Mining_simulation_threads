@@ -46,16 +46,14 @@ public class Ferry implements Runnable{
      * Run method for threads
      */
     public void run(){
-        while(trasferredSources >= foreman.getCountOfsource()){
-            while(inventory != maxCapacity){
-                try {
-                    sleep(0);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+        while(trasferredSources < foreman.getCountOfsource()){
+            try {
+                sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            start = System.nanoTime();
         }
+        System.out.println("Je plno");
     }
 
     /**
