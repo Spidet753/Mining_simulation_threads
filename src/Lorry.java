@@ -87,14 +87,14 @@ public class Lorry implements Runnable{
      */
     public void run(){
         long start = System.nanoTime();
-        //lorry is driving
+        //on the way
         try {
             sleep((int)(tLorry*Math.random()));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        //Lorry is at ferry
+        //at ferry
         long time = (System.nanoTime() - start) / TO_MILLIS;
         logLorryArrival(vNumber, time, writer);
             fillFerry();

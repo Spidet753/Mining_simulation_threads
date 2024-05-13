@@ -32,6 +32,9 @@ public class Foreman implements Runnable{
      */
     private int countOfsource = 0;
 
+    /**
+     * All sources - sources taken by workers
+     */
     private volatile int sourcesPicked;
     /**
      * Date format used with milliseconds used in the output file
@@ -48,7 +51,6 @@ public class Foreman implements Runnable{
      * @param writer to outprint into file
      */
     public Foreman(String file, BufferedWriter writer){
-
         this.file = file;
         this.writer = writer;
     }
@@ -108,7 +110,7 @@ public class Foreman implements Runnable{
      * log which sets up output for output file
      * @param time How long it took the foreman to find all sources
      */
-    private synchronized void logFoundSources(long time) {
+    private void logFoundSources(long time) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Předák našel %d zdrojů, trvalo mu to "+ time +" ms.\n", timeStamp, countOfsource);
         writeToLogFile(logMessage);
@@ -118,7 +120,7 @@ public class Foreman implements Runnable{
      * log which sets up output for output file
      * @param time How long it took the foreman to find all blocks
      */
-    private synchronized void logFoundblocks(long time) {
+    private void logFoundblocks(long time) {
         String timeStamp = dateFormatter.format(new Date());
         String logMessage = String.format("%s - Předák našel %d bloků, trvalo mu to "+ time +" ms.\n", timeStamp, blocks.size());
         writeToLogFile(logMessage);

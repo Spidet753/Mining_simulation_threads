@@ -159,7 +159,7 @@ public class Worker implements Runnable {
             try {
                 //putting lasts 1 second
                 semaphore.acquire();
-                sleep(1);
+                sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -221,7 +221,7 @@ public class Worker implements Runnable {
      * Tells the bufferedWriter from Main to write down a message
      * @param logMessage message to write
      */
-    private void writeToLogFile(String logMessage, BufferedWriter writer) {
+    public void writeToLogFile(String logMessage, BufferedWriter writer) {
         try  {
             writer.write(logMessage);
         } catch (IOException e) {

@@ -53,7 +53,6 @@ public class Ferry implements Runnable{
                 throw new RuntimeException(e);
             }
         }
-        System.out.println("Je plno");
     }
 
     /**
